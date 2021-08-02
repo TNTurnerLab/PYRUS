@@ -15,6 +15,7 @@ option_list <- list( make_option(c("-f", "--file"), default=NULL, type="characte
                      make_option(c("-a", "--annotation"), default=NULL, type="character",help='Input an Annotation'),
                      make_option(c("-c", "--cordfile"), default=NULL, type="character",help='Input a Chr Coordinates Bed File'), 
                      make_option(c("-l", "--lineColor"), default=NULL, type="character",help='Input a Color(s) ex: blue,red'),
+                     make_option(c("-i", "--lineMult"), default=NULL, type="character",help='Input a Color for -f line when using -d flag ex: blue'),
                      make_option(c("-t", "--plotTogether"), default=NULL, type="character",help='Plot Chromosomes Together. ex: NGF,POGZ'),
                      make_option(c("-o", "--multifile"), default=NULL, type="character",help='Outputs The Chromosome Plots Into One PDF, Defualt Is Plots Each Cordinate To Its Own PDF File'))
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -122,13 +123,23 @@ if (!is.null(opt$file)){
   
   if (!is.null(opt$dir)){
     
+    if (is.null(opt$lineMult)){
+      colofline= toString("blue")}
+    if (!is.null(opt$lineMult)){
+      getcol<- toString(opt$lineMult)
+      
+      colofline<- toString(getcol)
+      
+      
+    }
+    
     fr <- as.data.frame(fread(opt$file))
     colnames(fr) <- c('Chr','start','stop', 'Ecopynum')
     namef<-rep('Inital', times= length(fr$stop))
-    colit<-rep('blue', times= length(fr$stop))
+    colit<-rep(colofline, times= length(fr$stop))
     fr$FILENAME <- namef
     fr$COLOR<- colit
-    
+    #print(colit)
     
     
     
@@ -198,7 +209,8 @@ if (!is.null(opt$lineColor)){
   else{
     warning("TOO MANY ARGUMENTS ALLOWED FOR -l FLAG, NO -t FLAG CALLED")
   }
-  }
+}
+  
 
 i <- 1
 while (i <= length(chrom)){
@@ -650,7 +662,16 @@ if (!is.null(opt$dir) && !is.null(opt$cordfile)){
   a<-toString(rbind(str_trunc(h,20,"right")))
     
     test2 <- test2 %>% group_by(FILENAME)
-    plot<- test2 %>% ggplot(aes(x = start, y = Ecopynum, group=FILENAME,color=COLOR)) +scale_color_manual(values=c("black","blue"), labels = c("Files From Directory",a), name='Data')+ geom_line() + ggtitle(titlename) + xlab(xaxisname) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title = element_text(hjust = 0.5),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+    if (is.null(opt$lineMult)){
+      colofline= toString("blue")}
+    if (!is.null(opt$lineMult)){
+      getcol<- toString(opt$lineMult)
+      
+      colofline<- toString(getcol)
+      
+      
+    }
+    plot<- test2 %>% ggplot(aes(x = start, y = Ecopynum, group=FILENAME,color=COLOR)) +scale_color_manual(values=c("black",colofline), labels = c("Files From Directory",a), name='Data')+ geom_line() + ggtitle(titlename) + xlab(xaxisname) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title = element_text(hjust = 0.5),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
     plot<- plot + geom_hline(yintercept=2, color="light grey")
     
     ########ANNOTATION#######
@@ -821,6 +842,14 @@ if (!is.null(opt$dir) && !is.null(opt$cordfile)){
     write.table(dt, file = tablename, row.names=FALSE)
     
     if (!is.null(opt$plotTogether) && (is.null(opt$lineColor)) ){
+      if (is.null(opt$lineMult)){
+        colofline= toString("blue")}
+      if (!is.null(opt$lineMult)){
+        getcol<- toString(opt$lineMult)
+        
+        colofline<- toString(getcol)
+        
+      }
       col<- as.character(df$Color)
       names(col)<- as.character(df$GeneNames)
       `%notlike%` <- Negate(`%like%`)
@@ -833,7 +862,7 @@ if (!is.null(opt$dir) && !is.null(opt$cordfile)){
       plot<- plot
       
       
-      plot<- plot + geom_line(data=subset(df,dog %like% "Inital"),color="Blue")
+      plot<- plot + geom_line(data=subset(df,dog %like% "Inital"),color=colofline)
       
       ##THIS WORKS##
       ####ANNOTATION TRACK####
@@ -895,6 +924,14 @@ if (!is.null(opt$dir) && !is.null(opt$cordfile)){
     }
     
     if (!is.null(opt$plotTogether) && (!is.null(opt$lineColor)) ){
+      if (is.null(opt$lineMult)){
+        colofline= toString("blue")}
+      if (!is.null(opt$lineMult)){
+        getcol<- toString(opt$lineMult)
+        
+        colofline<- toString(getcol)
+        
+      }
       getlength <-strsplit(opt$plotTogether, split=',', fixed = TRUE)
       getcol<- toString(opt$lineColor)
       getcol<- strsplit(getcol, ',', fixed=TRUE)
@@ -906,7 +943,7 @@ if (!is.null(opt$dir) && !is.null(opt$cordfile)){
         plot<- df %>% ggplot(aes(x = start, y = Ecopynum, group=dog)) + geom_line(aes(color=GeneNames)) + scale_alpha_manual(values=c(1,0.4,1)) +scale_color_manual(values=colorit) + ggtitle(tname) +
           xlab(chromname) + ylab("Estimated Copy Number")  + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title = element_text(hjust = 0.5),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))                                                                                                                                                                     
         
-        plot<- plot + geom_line(data=subset(df,dog %like% "Inital"),color="Blue")
+        plot<- plot + geom_line(data=subset(df,dog %like% "Inital"),color=colorofline)
         
         
         ######WORKING##########
