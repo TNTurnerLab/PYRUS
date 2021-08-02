@@ -943,7 +943,7 @@ if (!is.null(opt$dir) && !is.null(opt$cordfile)){
         plot<- df %>% ggplot(aes(x = start, y = Ecopynum, group=dog)) + geom_line(aes(color=GeneNames)) + scale_alpha_manual(values=c(1,0.4,1)) +scale_color_manual(values=colorit) + ggtitle(tname) +
           xlab(chromname) + ylab("Estimated Copy Number")  + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title = element_text(hjust = 0.5),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))                                                                                                                                                                     
         
-        plot<- plot + geom_line(data=subset(df,dog %like% "Inital"),color=colorofline)
+        plot<- plot + geom_line(data=subset(df,dog %like% "Inital"),color=colofline)
         
         
         ######WORKING##########
