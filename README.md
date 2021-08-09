@@ -39,7 +39,13 @@ Chromosome file
     default=NULL
     
       ex: -d /path/to/a/directory/with/bed/files
-      
+"-p": 
+
+  Input a ending pattern for files found inside the directory in "-d" flag. Must be the endding pattern of the file.
+    
+    default=.bed
+    
+      ex: -p .t1.cn.bed.gz  
 "-i":
 
   Input a Color for initial line when using -d line, defualt color is blue.
@@ -127,6 +133,9 @@ Example Runs:
       * Add -d {/path/to/directory} and -i {COLORNAME} to change the initial -f file line color when plotting against all bed files in directory. 
         
           * ex :  -f qm.bed -c chr.bed -d /path/to/directory -i green
+       * Add -d {/path/to/directory} and -p {PATTERN} to grab only files with the inpputed ending inside directoru to be used in plot. 
+        
+          * ex :  -f qm.bed -c chr.bed -d /path/to/directory -i green -p .bed.gz
 
        * Add -a {AnnotationBedFile.bed} to add an annotation track to all plots. 
       
@@ -153,7 +162,7 @@ Example Runs:
         
           * ex : -f qm.bed -c chr.bed -d /path/to/directory -t XYZ,ABC -l blue,red -a myexonstoplot.bed 
           
-          * ex : -f qm.bed -c chr.bed -d /path/to/directory -i green -t XYZ,ABC -l blue,red -a myexonstoplot.bed 
+          * ex : -f qm.bed -c chr.bed -d /path/to/directory -i green -p .bed.gz -t XYZ,ABC -l blue,red -a myexonstoplot.bed 
    
       
 
