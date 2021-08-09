@@ -9,9 +9,11 @@ library(stringr)
 library(stringi)
 library(randomcoloR)
 library(pdftools)
+library(R.utils)
 
 option_list <- list( make_option(c("-f", "--file"), default=NULL, type="character",help='Input an Inital Quick-mer2 Bed File'),
                      make_option(c("-d", "--dir"), default=NULL, type="character",help='Input Directory of Bed Files'), 
+                     make_option(c("-p", "--dirpattern"), default=NULL, type="character",help='Pattern of files in Directory, defualt .bed'),
                      make_option(c("-a", "--annotation"), default=NULL, type="character",help='Input an Annotation'),
                      make_option(c("-c", "--cordfile"), default=NULL, type="character",help='Input a Chr Coordinates Bed File'), 
                      make_option(c("-l", "--lineColor"), default=NULL, type="character",help='Input a Color(s) ex: blue,red'),
@@ -145,7 +147,16 @@ if (!is.null(opt$file)){
     
     dir<- toString(opt$dir)
     print(opt$dir)
-    c<-list.files(path = dir , pattern = '.bed')
+    if (!is.null(opt$dirpattern)){
+      pattern<- toString(opt$dirpattern)
+      pattern1 <- paste0(pattern,"$")
+    }
+    if (is.null(opt$dirpattern)){
+     
+      pattern1 <- paste0(".bed","$")
+    }
+    
+    c<-list.files(path = dir , pattern = pattern1)
     c<- as.data.frame(c)
     dd<-NULL
     for (row in 1:nrow(c)){
@@ -937,13 +948,16 @@ if (!is.null(opt$dir) && !is.null(opt$cordfile)){
       getcol<- strsplit(getcol, ',', fixed=TRUE)
       
       if ((as.numeric(length(getcol[[1]])) >=2) && (as.numeric(length(getcol[[1]])) == as.numeric(length(getlength[[1]])) )){
+        
+        
+        
         colorit<- c(getcol[[1]])
         
         
         plot<- df %>% ggplot(aes(x = start, y = Ecopynum, group=dog)) + geom_line(aes(color=GeneNames)) + scale_alpha_manual(values=c(1,0.4,1)) +scale_color_manual(values=colorit) + ggtitle(tname) +
           xlab(chromname) + ylab("Estimated Copy Number")  + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title = element_text(hjust = 0.5),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))                                                                                                                                                                     
         
-        plot<- plot + geom_line(data=subset(df,dog %like% "Inital"),color=colorofline)
+        plot<- plot + geom_line(data=subset(df,dog %like% "Inital"),color=colofline)
         
         
         ######WORKING##########
