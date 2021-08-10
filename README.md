@@ -1,5 +1,6 @@
-# Quick2Plot
+# PYRUS
 
+PYRUS is an R script that utilizes flags to create a quick, and customizable way to create line graphs based on bed file data. Utilation of PYRUS includes having a quick plotter for copy number variation within a given gene domain range of a referenced bed file. Along with the estimated number of copies portrayed on the y axis, the x axsis will show the gene chromosome and location. If given a directory of files, and a main reference file, PYRUS has the ability to plot a gene's CNVs from all bed files inside a directory. This program will create a single plot for every gene inside a chromosome bed file, but can also plot multiple genes CNVs onto a single plot given the correct flag. It is recommened to use this feature for genes that are at a reasonable distance from one another to generate the best visual plot. In addition, there is an option to add an annotation track to the plot. The annotation track is in the lower quadrent of the graph and can be used for plotting exons in relation to the gene's CNVs. A combination of these options can be used to generate a CNVs plot tailored to the needs of the user.
 This script offered a quick, and customization way to create Ling Graphs based on data produced by Quick-mer2.
 
 ## Requirements
@@ -17,9 +18,9 @@ stringi
 randomcoloR
 pdftools
 
-Quick-mer2 Bed file
+### File Requirments
 
-Chromosome file
+Bed files are the only acceptable file types for this script
 
 ### Flag Options:
 
@@ -48,7 +49,7 @@ Chromosome file
       ex: -p .t1.cn.bed.gz  
 "-i":
 
-  Input a Color for initial line when using -d line, defualt color is blue.
+  Input a Color for initial line when using -d line, default color is blue.
   
     default=NULL
     
@@ -100,7 +101,7 @@ Chromosome file
 "-o":
 
   
-  Allows User to Name, and Place All Chromosome Plots Outputs Into One PDF, Defualt Is Plots Each Cordinate To Its Own PDF File
+  Allows User to Name, and Place All Chromosome Plots Outputs Into One PDF, Default Is Plots Each Coordinate To Its Own PDF File
   
     default=NULL
      
@@ -116,7 +117,7 @@ Example Runs:
  
   * -f -c
 
-    * Plots all chromosomes in -c flag's file with a black line and in spetrate PDF files
+    * Plots all chromosomes in -c flag's file with a black line and in seprate PDF files
       
       * Add -l {COLORNAME} to change line color. 
        
