@@ -1,22 +1,23 @@
-# PYRUS
+<img align="right" src="https://user-images.githubusercontent.com/77067493/129043760-26d57868-5f15-46bb-a00e-e82f8c50fa9c.png" height="20%" width="20%" >
 
-PYRUS is an R script that utilizes flags to create a quick, and customizable way to create line graphs based on bed file data. Utilation of PYRUS includes having a quick plotter for copy number variation within a given gene domain range of a referenced bed file. Along with the estimated number of copies portrayed on the y axis, the x axsis will show the gene chromosome and location. If given a directory of files, and a main reference file, PYRUS has the ability to plot a gene's CNVs from all bed files inside a directory. This program will create a single plot for every gene inside a chromosome bed file, but can also plot multiple genes CNVs onto a single plot given the correct flag. It is recommened to use this feature for genes that are at a reasonable distance from one another to generate the best visual plot. In addition, there is an option to add an annotation track to the plot. The annotation track is in the lower quadrent of the graph and can be used for plotting exons in relation to the gene's CNVs. A combination of these options can be used to generate a CNVs plot tailored to the needs of the user.
-This script offered a quick, and customization way to create Line Graphs based on data produced by Quick-mer2.
+<h1>PYRUS</h1>
+
+  PYRUS is an R script that utilizes flags to create a quick, and customizable way to create line graphs based on bed file data. Utilation of PYRUS includes having a quick plotter for copy number variation within a given gene domain range of a referenced bed file. Along with the estimated number of copies portrayed on the y axis, the x axsis will show the gene chromosome and location. If given a directory of files, and a main reference file, PYRUS has the ability to plot a gene's CNVs from all bed files inside a directory. This program will create a single plot for every gene inside a chromosome bed file, but can also plot multiple genes CNVs onto a single plot given the correct flag. It is recommened to use this feature for genes that are at a reasonable distance from one another to generate the best visual plot. In addition, there is an option to add an annotation track to the plot. The annotation track is in the lower quadrent of the graph and can be used for plotting exons in relation to the gene's CNVs. A combination of these options can be used to generate a CNVs plot tailored to the needs of the user.
 
 ## Requirements
 
 ### R studio with the following packages:
 
-optparse
-base
-data.table
-ggplot2
-dplyr
-tibble
-stringr
-stringi
-randomcoloR
-pdftools
+* optparse
+* base
+* data.table
+* ggplot2
+* dplyr
+* tibble
+* stringr
+* stringi
+* randomcoloR
+* pdftools
 
 ### File Requirments
 
