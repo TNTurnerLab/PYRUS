@@ -2,7 +2,7 @@
 
 <h1>PYRUS</h1>
 
-  PYRUS is an R script that utilizes flags to create a quick, and customizable way to create line graphs based on bed file data. Utilation of PYRUS includes having a quick plotter for copy number variation within a given gene domain range of a referenced bed file. Along with the estimated number of copies portrayed on the y axis, the x axsis will show the gene chromosome and location. If given a directory of files, and a main reference file, PYRUS has the ability to plot a gene's CNVs from all bed files inside a directory. This program will create a single plot for every gene inside a chromosome bed file, but can also plot multiple genes CNVs onto a single plot given the correct flag. It is recommened to use this feature for genes that are at a reasonable distance from one another to generate the best visual plot. In addition, there is an option to add an annotation track to the plot. The annotation track is in the lower quadrent of the graph and can be used for plotting exons in relation to the gene's CNVs. A combination of these options can be used to generate a CNVs plot tailored to the needs of the user.
+  PYRUS is an R script that utilizes flags to create a quick, and customizable way to create line graphs based on bed file data. Utilation of PYRUS includes having a quick plotter for copy number variation within a given gene domain range of a referenced bed file. Along with the estimated number of copies portrayed on the y axis, the x axsis will show the gene chromosome and location. If given a directory of files, and a main reference file, PYRUS has the ability to plot a gene's CNVs from all bed files inside a directory. This program will create a single plot for every gene inside a chromosome bed file, but can also plot multiple genes CNVs onto a single plot given the correct flag. It is recommened to use this feature for genes that are at a reasonable distance from one another to generate the best visual plot. In addition, there is an option to add an annotation track to the plot. The annotation track is in the lower quadrent of the graph and can be used for plotting exons in relation to the gene's CNVs. The script also gives the user to option to plot a box-plot window of the average copy number values of all files fed into the script. The user will see a blue, rhombus denoting the average copy number of the file represented by the -f flag. If the user wishes, they can also print out a png image in place of a pdf file. A combination of these options can be used to generate a CNVs plot tailored to the needs of the user.
 
 ## Requirements
 
@@ -18,6 +18,9 @@
 * stringi
 * randomcoloR
 * pdftools
+* grid
+* png
+* patchwork
 
 ### File Requirments
 
@@ -107,7 +110,22 @@ Bed files are the only acceptable file types for this script
     default=NULL
      
      ex: -o multiplePagePDFFileofMyPlots.pdf
+     
+"-r":
+
+  Flag to change the output from a pdf file to a png file. When creating multiple plots at a single time, if the -o flag is used in combination with the -r flag, output will be png files combined into one pdf file.
     
+    defualt=NULL
+
+      ex: -r y or -o output.pdf -r y
+      
+"-b":
+
+   This flag will create a box-plot window in the top right corner of the existing line plot. The box plot will display the individual, marked with the -f flag, with a blue dot.
+
+    defualt=NULL
+      
+      ex: -b y 
     
 Example Runs:
 
@@ -135,7 +153,7 @@ Example Runs:
       * Add -d {/path/to/directory} and -i {COLORNAME} to change the initial -f file line color when plotting against all bed files in directory. 
         
           * ex :  -f qm.bed -c chr.bed -d /path/to/directory -i green
-       * Add -d {/path/to/directory} and -p {PATTERN} to grab only files with the inpputed ending inside directoru to be used in plot. 
+       * Add -d {/path/to/directory} and -p {PATTERN} to grab only files with the inpputed ending inside directory to be used in plot. 
         
           * ex :  -f qm.bed -c chr.bed -d /path/to/directory -i green -p .bed.gz
 
@@ -144,6 +162,17 @@ Example Runs:
           * ex : -f qm.bed -c chr.bed -d /path/to/directory -a myexonstoplot.bed
           
           * ex : -f qm.bed -c chr.bed -a myexonstoplot.bed 
+         
+      * Add -b y to create a box-plot window on the line graph displaying the average copy number estimation and in a blue rhombus, the average copy number of the file presented in -f flag will be displayed on top of tye box plot. 
+	        
+          * ex: -f qm.bed -c chr.bed -b y
+      
+      * Add -r y to create a png file output. 
+	        
+          * ex: -f qm.bed -c chr.bed -r y -b y
+       * Add -r y in combination with the -o flag to make a pdf of png images.
+          
+          * ex :  -f qm.bed -c chr.bed -o output.pdf -r y -b y
 
 
   * -f -c -t 
@@ -167,9 +196,10 @@ Example Runs:
           * ex : -f qm.bed -c chr.bed -d /path/to/directory -i green -p .bed.gz -t XYZ,ABC -l blue,red -a myexonstoplot.bed 
    
       
-
-
-  
-
-
-  
+        * Add -r y to create a png file output. 
+	        
+          * ex: -f qm.bed -c chr.bed -r y
+      
+        * Add -b y to create a box-plot window with box-plots labled to each gene name inputted with the -t flag. Each box plot will contain the average copy number and a blue, rhombus showing the average copy number for each respective gene.   
+	        
+          * ex: -f qm.bed -c chr.bed -d /path/to/directory -t XYZ,ABC -l blue,red -a myexonstoplot.bed -b y 
