@@ -22,7 +22,7 @@
 * png
 * patchwork
 
-### File Requirments
+### File Requirements
 
 Bed files are the only acceptable file types for this script
 
@@ -76,7 +76,24 @@ Bed files are the only acceptable file types for this script
     default=NULL
       
       ex: -a exonbedfile.bed
+"-a": 
+
+  Flag must be used along with "-a" to start submit non-interactive answers to the annotation flag "-a". This flag will be used from the command-line and will still answer the following questions:
+  
+      If input file a bed file (y/n):
+      What column number is your chr in (value): 
+      What column is your start position in (value): 
+      What column is your end position in (value): 
+      Alpha (value): 
+      Color (char): 
+      Outline Color (char): 
+      Include a legend (y/n):
+      Name Of Legend: 
     
+    default=NULL
+      
+      ex: -a exonbedfile.bed -n "y,1,2,3,4,color,color,y,name"
+      
 "-c": REQUIRED
 
   Input a Chromosome Coordinates Bed File
@@ -115,7 +132,7 @@ Bed files are the only acceptable file types for this script
 
   Flag to change the output from a pdf file to a png file. When creating multiple plots at a single time, if the -o flag is used in combination with the -r flag, output will be png files combined into one pdf file.
     
-    defualt=NULL
+    default=NULL
 
       ex: -r y or -o output.pdf -r y
       
@@ -123,7 +140,7 @@ Bed files are the only acceptable file types for this script
 
    This flag will create a box-plot window in the top right corner of the existing line plot. The box plot will display the individual, marked with the -f flag, with a blue dot.
 
-    defualt=NULL
+    default=NULL
       
       ex: -b y 
     
@@ -157,12 +174,18 @@ Example Runs:
         
           * ex :  -f qm.bed -c chr.bed -d /path/to/directory -i green -p .bed.gz
 
-       * Add -a {AnnotationBedFile.bed} to add an annotation track to all plots. 
+       * (Interactive) Add -a {AnnotationBedFile.bed} to add an annotation track to all plots. 
       
           * ex : -f qm.bed -c chr.bed -d /path/to/directory -a myexonstoplot.bed
           
           * ex : -f qm.bed -c chr.bed -a myexonstoplot.bed 
+        
+      * (Non-Interactive) Add -a {AnnotationBedFile.bed} AND -n "y,1,2,3,4,color,color,y,name" to add an annotation track to all plots.
          
+          * ex : -f qm.bed -c chr.bed -d /path/to/directory -a myexonstoplot.bed -n "y,1,2,3,4,color,color,y,name"
+          
+          * ex : -f qm.bed -c chr.bed -a myexonstoplot.bed n "y,1,2,3,4,color,color,y,name"
+	 
       * Add -b y to create a box-plot window on the line graph displaying the average copy number estimation and in a blue rhombus, the average copy number of the file presented in -f flag will be displayed on top of tye box plot. 
 	        
           * ex: -f qm.bed -c chr.bed -b y
@@ -185,9 +208,13 @@ Example Runs:
         
           *  ex: -f qm.bed -c chr.bed -t XYZ,ABC -l blue,red
 
-        * Add -a {AnnotationBedFile.bed} to add an annotation track to all plot. 
+        * (Interactive) Add -a {AnnotationBedFile.bed} to add an annotation track to all plot. 
       
           * ex : -f qm.bed -c chr.bed -t XYZ,ABC -l blue,red -a myexonstoplot.bed 
+
+        * (Non-Interactive) Add -a {AnnotationBedFile.bed} AND -n "y,1,2,3,4,color,color,y,name" to add an annotation track to all plots.
+
+          * ex : -f qm.bed -c chr.bed -t XYZ,ABC -l blue,red -a myexonstoplot.bed -n "y,1,2,3,4,color,color,y,name"
       
         * Add -d {/path/to/directory} to plot multiple lines from other bedfiles on top of the initial file given with -f flag.  
         
@@ -200,6 +227,6 @@ Example Runs:
 	        
           * ex: -f qm.bed -c chr.bed -r y
       
-        * Add -b y to create a box-plot window with box-plots labled to each gene name inputted with the -t flag. Each box plot will contain the average copy number and a blue, rhombus showing the average copy number for each respective gene.   
+        * Add -b y to create a box-plot window with box-plots labeled to each gene name inputted with the -t flag. Each box plot will contain the average copy number and a blue, rhombus showing the average copy number for each respective gene.   
 	        
-          * ex: -f qm.bed -c chr.bed -d /path/to/directory -t XYZ,ABC -l blue,red -a myexonstoplot.bed -b y 
+          * ex: -f qm.bed -c chr.bed -d /path/to/directory -t XYZ,ABC -l blue,red -a myexonstoplot.bed -n "y,1,2,3,4,color,color,y,name" -b y 
