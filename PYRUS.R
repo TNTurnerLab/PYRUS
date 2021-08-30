@@ -53,12 +53,10 @@ if(!is.null(opt$non) & !is.null(opt$annotation)){
       if((as.numeric(length(annotate[[1]])) ==9)){
         nameexon<- as.character(annotate[[1]][9])
       }
-      
       if(exonledgend=="y"| exonledgend=="yes"){
-        
         if((as.numeric(length(annotate[[1]])) !=9)){
           warning("NO EXON TITLE NAME GIVEN")
-          stop()
+          stop
         }
       }
   
@@ -244,6 +242,7 @@ getInput<-function(){
       }
       
       listchr<-c(unique(ucdf))
+     
       
 
         if(!is.null(opt$dir)){
@@ -266,6 +265,7 @@ getInput<-function(){
             colit<-rep(colofline, times= length(fr$stop))
             fr$FILENAME<-namef
             fr$COLOR<-colit
+           
 
             dir<-toString(opt$dir)
 
@@ -280,7 +280,8 @@ getInput<-function(){
                 c<-list.files(path=dir , pattern=pattern1, full.names=TRUE)
             }
             
-
+            
+            
             
             readdata <- function(x)
             {
@@ -300,22 +301,25 @@ getInput<-function(){
               mkrd$COLOR<-colit
               return(mkrd)
             }
-            
+           
             f<-lapply(c,readdata)
+            
+           
             f<-mapply(cbind, f, "FILENAME"=1:length(f), SIMPLIFY=F)
             
             d<- do.call("rbind", f)
             df<-rbind(fr, data.frame(d))
         }
-            
+      
+      if(is.null(opt$dir)){
+        df<-as.data.frame(fread(opt$file))
+        colnames(df)<-c('Chr','start','stop', 'Ecopynum')
         
-  
-        if(is.null(opt$dir)){
-            df<-as.data.frame(fread(opt$file))
-            colnames(df)<-c('Chr','start','stop', 'Ecopynum')
-            df<- df %>% filter(df$Chr %in% listchr)
-        }
+      }
+        
+      
     }
+    
 
     else{
         df<-NULL
@@ -331,6 +335,9 @@ getInput<-function(){
 dataf<-getInput()
 data<-as.data.frame(dataf)
 
+
+
+
 #####################################
 
 #-----------------------------------#
@@ -341,6 +348,7 @@ data<-as.data.frame(dataf)
 #########Basic plotter without -t or -d flag################
 lista<-NULL
 holda<-NULL
+
 if(is.null(opt$plotTogether) && is.null(opt$dir) ){
 
   if(is.null(opt$lineColor)){
@@ -361,21 +369,29 @@ if(is.null(opt$plotTogether) && is.null(opt$dir) ){
   }
   i<-1
   
-  while(i <= length(chrom)){
-   
-    if(i >= 0){
-      
-      test1<-data %>% filter(data$Chr %in% chrom[[i]]$Chr)
   
-      test1<-test1 %>% filter(as.numeric(test1$start) <= as.numeric(chrom[[i]]$stop))
+  while(i <= length(chrom)){
+    
+    if(i >= 0){
+     print(chrom[[i]])
+      test2<-data %>% filter(data$Chr %in% chrom[[i]]$Chr)
+      #a %<-% {
+      #print(test2$Chr)
+      test2<-test2 %>% filter(as.numeric(test2$start) <= as.numeric(chrom[[i]]$stop))
+      #}
+      #b %<-% {
+      test2<-test2 %>% filter(as.numeric(test2$stop) >= as.numeric(chrom[[i]]$start))
+      #}
+      #system.time(test2<-cbind(a,b))
       
-      test1<-test1 %>% filter(as.numeric(test1$stop) >= as.numeric(chrom[[i]]$start))
+      test2<-as.data.frame(test2)
+      print(test2)
       
-      if(nrow(test1)>=1){
-      test2<-as.data.frame(test1)
-      }
+      
+      
+   
 
-      getnamegene<-toString(rownames(chrom[[i]]))
+      getnamegene<-toString(unique(chrom[[i]]$GeneName))
       titlestring<-toString("Gene")
       titlename<-paste(getnamegene,titlestring)
       
@@ -395,7 +411,7 @@ if(is.null(opt$plotTogether) && is.null(opt$dir) ){
         nameoffile<-paste(i,endfilename, sep="")
       }
 
-      xstring<-chrom[[i]]$Chr
+      xstring<-unique(chrom[[i]]$Chr)
       str<-toString("Chromosome Position (")
       str1<-paste(str,xstring)
       str2<-toString(")")
@@ -419,6 +435,7 @@ if(is.null(opt$plotTogether) && is.null(opt$dir) ){
              ylab="Estimated Copy Number", main=titlename , pch=19,
              ylim= c(0,6), type= 'l' , cex.main=1, cex.lab=1, cex.axis=1)
         abline(h=2, col="grey", lty=2)
+       
 
         ###ANNOTATION TRACK###
         if((!is.null(opt$annotation) | !is.null(opt$non) ) | (!is.null(opt$non) & !is.null(opt$annotation))){
@@ -559,17 +576,22 @@ if(is.null(opt$plotTogether) && is.null(opt$dir) ){
       
         }
       }
-    }
-    i<-i + 1 
+      i<-i + 1
+      if(is.null(opt$multifile) && (is.null(opt$png)) ){
+        shortname<-nameoffile
+        file.rename("Rplots.pdf",nameoffile)
+      }
+     
   }
-  
+  }
   dev.off()
   graphics.off()
 
   if(!is.null(opt$multifile) && (is.null(opt$png)) ){
+    shortname<- toString(opt$multifile)
     file.rename("Rplots.pdf",shortname)
   }
-
+  
   if(!is.null(opt$multifile) && !(is.null(opt$png)) ){
     
     list1<-lista
@@ -580,7 +602,7 @@ if(is.null(opt$plotTogether) && is.null(opt$dir) ){
       
       if(i <= length(list1)){
         
-        print(i)
+        
         print(paste0(working,'/',lista[i,]))
         file.exists(paste0(working,'/',lista[i,]))
         merge.png.pdf (pdfFile = paste0(i,".pdf"), pngFiles = paste0(working,'/',lista[i,]), deletePngFiles = F)
@@ -911,7 +933,7 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
           
           col1<-as.character(col$COLOR)
           names(col1)<-as.character(col$FILENAME)
-          h<-toString(opt$file)
+          h<-toString(basename(opt$file))
           a<-toString(rbind(str_trunc(h,20,"right")))
           
           test2<-test2 %>% group_by(FILENAME)
