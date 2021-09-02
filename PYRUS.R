@@ -174,7 +174,7 @@ merge.png.pdf <- function(pdfFile, pngFiles, deletePngFiles=FALSE) {
     
     pngRaster <- readPNG(pngFile)
     
-    grid.raster(pngRaster, width=unit(18, "cm"), height= unit(15, "cm"))
+    grid.raster(pngRaster, width=unit(13, "cm"), height= unit(11, "cm"))
     
     if (i < n) plot.new()
     
@@ -204,7 +204,8 @@ getChrom<-function(){
         lm<-as.data.frame(fread(opt$cordfile))
         colnames(lm)<-c('Chr','start','stop', 'GeneName')
         rownames(lm)<-lm$GeneName
-
+        #print(lm)
+        
         lm.list<-split(lm, seq(nrow(lm)))
         
     }
@@ -308,8 +309,11 @@ getInput<-function(){
               mkrd$COLOR<-colit
               return(mkrd)
             }
+            print(c)
 
             f<-lapply(c,readdata)
+
+
             f<-mapply(cbind, f, "FILENAME"=1:length(f), SIMPLIFY=F)
 
             d<- do.call("rbind", f)
@@ -340,13 +344,15 @@ getInput<-function(){
 
                 colit<-rep('black', times= length(mkrd$stop))
                 mkrd$COLOR<-colit
+                mkrd<- rbind(fr,data.frame(mkrd))
 
                return(mkrd)
               }
-              f<-lapply(c,readdatasingle)
+              df<-lapply(c,readdatasingle)
+              print(length(df))
 
-              d<- do.call("rbind", f)
-              df<-rbind(fr,data.frame(d))
+              #df<- do.call("rbind", c)
+              #df<-rbind(fr,data.frame(d))
 
             }
             
@@ -374,9 +380,13 @@ getInput<-function(){
 )
 
 dataf<-getInput()
+if(is.null(opt$singleplots)){
 data<-as.data.frame(dataf)
 
-
+}
+if(!is.null(opt$singleplots)){
+  data<-dataf
+}
 
 
 #####################################
@@ -1156,9 +1166,9 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
     gh<-as.character(newdataset$GeneName)
     names(gh)<-as.character(newdataset$Chr)
     hh<-toString(paste(gg,":",gh))
-    #tname<-paste("Genes:", toString(gh))
+    
     chr1<-paste(hh)
-    #chromname<-str_replace(chromname,fixed(",")," , ")
+    
     tname<-paste(toString(gh))
     df=NULL
     dt=NULL
@@ -1312,8 +1322,7 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
         plot<-plot + geom_line(data=subset(df,dog %like% "Inital"),color=colofline)  
         plot<-plot + geom_hline(yintercept=2, color="light grey")
         
-  #       
-  #       bquote(paste(paste("Genes: "),italic(.(tname))))) + xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")"))))
+  
         ###ANNOTATION TRACK###
         
         if((!is.null(opt$annotation) | !is.null(opt$non) ) | (!is.null(opt$non) & !is.null(opt$annotation))){
@@ -1402,14 +1411,11 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
 
 }
 
-############################################
 
-#-----------------------------------#
-#####################################
-#####################################
-#-----------------------------------#
-
-###########Plot Directory Full##############
+######################
+###Plot Directory#####
+######################
+print(length(data))
 
 if(!is.null(opt$singleplots)){
 #########Plotting with -d flag##############
@@ -1424,32 +1430,18 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
     while(i <= length(chrom)){
       
       if(i >= 0){
+        whatname<-lapply(data,function(x){
+          `%notlike%`<-Negate(`%like%`)
+          x<-data.frame(x)
+          tes1<- unique(x$FILENAME)
+          print(tes1)
+          tes1<-as.data.frame(tes1)
+          colnames(tes1)<-"names"
+          tes1<- tes1 %>% filter(tes1$names %notlike% "Inital")
+        })
         
-        # Filter Based on Each Input
-        test2<-data %>% filter(data$Chr %in% chrom[[i]]$Chr)
-        test2<-test2 %>% filter(as.numeric(test2$start) <= as.numeric(chrom[[i]]$stop))
-        test2<-test2 %>% filter(as.numeric(test2$stop) >= as.numeric(chrom[[i]]$start))
-        test2<-test2 %>% group_by(FILENAME)
-        
-        if(nrow(test2)>=1){
-        `%notlike%`<-Negate(`%like%`)
-        tes1<-unique(test2$FILENAME)
-        tes1<-as.data.frame(tes1)
-        colnames(tes1)<-"names"
-        tes1<- tes1 %>% filter(tes1$names %notlike% "Inital")
-        
-        
-        for (r in 1:nrow(tes1)){
-          name<-tes1[r, "names"]
-          
-        if(is.null(opt$lineColor)){
-          #Create String For Title With Gene Name
+        thename<-lapply(whatname,function(name){
           getnamegene<-toString(rownames(chrom[[i]]))
-          #getnamegene<-italic(getnamegene)
-          titlestring<-toString("Gene")
-          titlename<-paste(getnamegene,titlestring)
-          
-          #Rename File 
           if(is.null(opt$png)){
             endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
             nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
@@ -1459,7 +1451,59 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
             endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
             nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
           }
+          return(file.path(nameoffile))
+        })
+        lapply(data,function(x){
+        # Filter Based on Each Input
+        test2<-data.table(x)
+        test2<- test2[which(Chr <= chrom[[i]]$Chr)]
+        #test2<-data %>% filter(data$Chr %in% chrom[[i]]$Chr)
+        
+        
+        
+        test2<- test2[start <= as.numeric(chrom[[i]]$stop)]
+        test2<-test2[stop >= as.numeric(chrom[[i]]$start)]
+        #test2<-test2 %>% filter(as.numeric(start) <= as.numeric(chrom[[i]]$stop))
+        #test2<-test2 %>% filter(as.numeric(stop) >= as.numeric(chrom[[i]]$start))
+        
+        
+        `%notlike%`<-Negate(`%like%`)
+        tes1<-unique(test2$FILENAME)
+        tes1<-as.data.frame(tes1)
+        colnames(tes1)<-"names"
+        tes1<- tes1 %>% filter(tes1$names %notlike% "Inital")
+        
+        
+        lapply(tes1$names,function(x){
+          test2<- test2[which(FILENAME == toString(x)| FILENAME == "Inital")]
+          test2<-test2 %>% group_by(FILENAME)
+          name<-x
+          `%notlike%`<-Negate(`%like%`)
+        tes1<-unique(test2$FILENAME)
+        tes1<-as.data.frame(tes1)
+        colnames(tes1)<-"names"
+        tes1<- tes1 %>% filter(tes1$names %notlike% "Inital")
           
+        if(is.null(opt$lineColor)){
+          #Create String For Title With Gene Name
+          getnamegene<-toString(rownames(chrom[[i]]))
+         
+          titlestring<-toString("Gene")
+          
+         #Rename File 
+          if(is.null(opt$png)){
+            endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
+            nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
+          }
+          
+          if(!is.null(opt$png) && is.null(opt$multifile)){
+            endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
+            nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
+          }
+          if(!is.null(opt$png) && !is.null(opt$multifile)){
+            endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
+            nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
+          }
           xstring<-chrom[[i]]$Chr
           str<-toString("Chromosome Position (")
           str1<-paste(str,xstring)
@@ -1493,11 +1537,12 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
               
               plot<-plot + geom_hline(yintercept=2, color="light grey")
               
-              nameoffile<-paste0(toString(name),nameoffile)
+              nameoffile<-paste0(nameoffile)
 
+        
         ###ANNOTATION TRACK###
         
-        if((!is.null(opt$annotation) | !is.null(opt$non) ) | (!is.null(opt$non) & !is.null(opt$annotation))){
+        if((!is.null(opt$annotation) | !is.null(opt$non) ) || (!is.null(opt$non) & !is.null(opt$annotation))){
           
           exondf<-as.data.frame(fread(opt$annotation))
           exonstartcol<-as.numeric(exonstartcol)
@@ -1514,8 +1559,9 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
           exondf<-exondf %>% filter(exondf$Chr %in% chrom[[i]]$Chr)
           exondf<-exondf %>% filter(as.numeric(exondf$start) <= as.numeric(chrom[[i]]$stop))
           exondf<-exondf %>% filter(as.numeric(exondf$end) >= as.numeric(chrom[[i]]$start))
-          
+          print(exondf)
           if(1 <= length(exondf$start)){
+            
             j<-1
             
             while(j <= length(exondf$start)){
@@ -1525,7 +1571,8 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
                 strte<-exondf[j, "start"]
                 stope<-exondf[j, "end"]
                 
-                if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
+                if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+                  
                   plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder) + scale_fill_discrete(labels=c(nameexon))+ scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon))
                   plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)
                   
@@ -1547,8 +1594,12 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
           
             a<-as.data.frame(sapply(split(test2$Ecopynum,test2$FILENAME),mean))
             colnames(a)<-"means"
+            print(colnames(a))
+            
             a<-subset(a,rownames(a) %in% name | rownames(a) %in% "Inital")
-
+            print(a)
+            
+            
             fun_mean <- function(x){
               return(data.frame(y=mean(x),label=mean(x,na.rm=T)))}
             
@@ -1559,54 +1610,45 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
             
         }
         ##########Plot###########
-        
-        ggsave(plot=plot, width=7, height=6, dpi=300, filename=nameoffile)
-        
-        if(!is.null(opt$png) && !is.null(opt$multifile)){
-          list1<-c(nameoffile)
-          
-          pngFiles<-rbind(list, (list1))
-          merge.png.pdf (pdfFile = paste0(nameoffile,".pdf"), pngFiles = pngFiles, deletePngFiles = T)
-          
-          hold1<-c(paste0(nameoffile,".pdf"))
-          hold<- rbind(hold,hold1)
-          
-          if(!is.null(opt$multifile)){
-            filename<-toString(opt$multifile)
-            pdf_combine(hold,output=filename)
-          }
-          
-        }
-        if(is.null(opt$png) && !is.null(opt$multifile)){
-          
-          list1<-c(nameoffile)
-          list<-rbind(list, (list1))
-          
-          if(!is.null(opt$multifile)){
-            filename<-toString(opt$multifile)
-            pdf_combine(list, output=filename)
-          }
-        }
-              
+       
             }
+          ggsave(plot=plot, width=7, height=6, dpi=300, filename=nameoffile)
+        })
+        
+        
+        
+        
+        
+        })
+        if( (!is.null(opt$multifile) ) && !(is.null(opt$png)) ){
+          finalname<- toString(opt$multifile)
+          
+          
+          nameitagain<-toString(thename)
+          nameitagain<-file.path(thename)
+          
+          
+          merge.png.pdf (pdfFile = paste0(finalname), pngFiles = nameitagain, deletePngFiles = T)
+          
         }
+        if( (!is.null(opt$multifile) ) && (is.null(opt$png)) ){
+          finalname<- toString(opt$multifile)
+          nameitagain<-file.path(thename)
+          pdf_combine(nameitagain,output=finalname)
+        }
+        if(!is.null(opt$multifile) && (is.null(opt$png))){
+          nameitagain<-file.path(thename)
+          
+          lapply(nameitagain,function(x){file.remove(x)})
         }
       i<-i + 1
+        
         
       if(!is.null(opt$lineColor)){
         warning("-l FLAG MUST BE NOT BE USED")
       }
-    }
-    
+
   }
-  
-  if(!is.null(opt$multifile)){
-    lapply(list,function(x){file.remove(x)})
-  }
-  
-  if(!is.null(opt$png)){
-    lapply(hold,function(x){file.remove(x)})
-  } 
 }
 
 ##########plotting -d and -t flags#################
@@ -1686,6 +1728,7 @@ if(!is.null(opt$plotTogether)){
     
   }
   
+    
   if(!is.null(opt$png)){
     shortname<-paste0("Genes_",toString(gh),"_CHR_Position_vs_Copy_Num.png")
     shortname<-str_replace(shortname,fixed(", "),"_")
@@ -2012,8 +2055,7 @@ if(!is.null(opt$plotTogether)){
       lapply(hold,function(x){file.remove(x)})
     }
         
-    
-  
+
     if(as.numeric(length(getcol[[1]])) <2){
       warning("TOO FEW ARGUMENTS ALLOWED FOR -l FLAG")
       stop()
@@ -2028,11 +2070,12 @@ if(!is.null(opt$plotTogether)){
       warning("TOO MANY ARGUMENTS ALLOWED FOR -t FLAG")
       stop()
     }
+    }
   }
   }
-}
-}
+  }
 
+}
 }
 
 #####################################
