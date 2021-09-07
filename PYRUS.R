@@ -13,11 +13,14 @@ library(R.utils)
 library(patchwork)
 library(png)
 library(grid)
+library(seqminer)
+
 
 start1 <- Sys.time() 
 option_list<-list(make_option(c("-f", "--file"), default=NULL, type="character",help='Input an Inital Quick-mer2 Bed File'),
                     make_option(c("-d", "--dir"), default=NULL, type="character",help='Input Directory of Bed Files'), 
                     make_option(c("-p", "--dirpattern"), default=NULL, type="character",help='Pattern of files in Directory, defualt .bed'),
+                    make_option(c("-u", "--notabixfiles"), default=NULL, type="character",help='Do not use .tbi files'),
                     make_option(c("-a", "--annotation"), default=NULL, type="character",help='Input an Annotation'),
                     make_option(c("-c", "--cordfile"), default=NULL, type="character",help='Input a Chr Coordinates Bed File'), 
                     make_option(c("-l", "--lineColor"), default=NULL, type="character",help='Input a Color(s) ex: blue,red'),
@@ -174,7 +177,7 @@ merge.png.pdf <- function(pdfFile, pngFiles, deletePngFiles=FALSE) {
     
     pngRaster <- readPNG(pngFile)
     
-    grid.raster(pngRaster, width=unit(13, "cm"), height= unit(11, "cm"))
+    grid.raster(pngRaster, width=unit(14, "cm"), height= unit(12, "cm"))
     
     if (i < n) plot.new()
     
@@ -204,7 +207,6 @@ getChrom<-function(){
         lm<-as.data.frame(fread(opt$cordfile))
         colnames(lm)<-c('Chr','start','stop', 'GeneName')
         rownames(lm)<-lm$GeneName
-        #print(lm)
         
         lm.list<-split(lm, seq(nrow(lm)))
         
@@ -218,6 +220,16 @@ getChrom<-function(){
     
 }  
 chrom<-getChrom()
+
+
+  
+  if(!is.null(opt$cordfile)){
+    lm<-as.data.frame(fread(opt$cordfile))
+    colnames(lm)<-c('Chr','start','stop', 'GeneName')
+    name3<- list(paste0(lm$GeneName,",",lm$Chr,":",lm$start,"-",lm$stop))
+
+  }
+  
 
 #####################################
 
@@ -248,7 +260,6 @@ getInput<-function(){
       lschr<-as.data.frame(listchr)
       colnames(lschr)<- "name"
      
-      
 
         if(!is.null(opt$dir)){
             
@@ -260,110 +271,241 @@ getInput<-function(){
                 getcol<-toString(opt$lineMult)
                 colofline<-toString(getcol) 
             }
-            
+            first<-lapply(name3[[1]],function(x){
             fr<-as.data.frame(fread(opt$file))
+            startsplit<-strsplit(x, ',', fixed=TRUE)
             
+            range<-toString(startsplit[[1]][2])
+            splitfromchr<-strsplit(range, ':', fixed=TRUE)
+            chr<-splitfromchr[[1]][1]
+            splitpositions<-strsplit(splitfromchr[[1]][2], '-', fixed=TRUE)
+            
+            start1<-splitpositions[[1]][1]
+            stop1<-splitpositions[[1]][2]
+            nameofit<-startsplit[[1]][1]
             
             colnames(fr)<-c('Chr','start','stop', 'Ecopynum')
            
-            fr<- fr %>% filter(fr$Chr %in% lschr$name)
+            fr2<- fr[fr[['Chr']] == chr,]
+            fr1 <- fr2 %>% filter(as.numeric(start) <= as.numeric(stop1))
+            fr <- fr1 %>% filter(as.numeric(stop) >= as.numeric(start1))
+            #fr<- fr[as.numeric(fr[['start']]) >= start1, fr[['stop']] <= stop1,]
             
             namef<-rep('Inital', times= length(fr$stop))
             colit<-rep(colofline, times= length(fr$stop))
             fr$FILENAME<-namef
             fr$COLOR<-colit
-            
-           
 
+            Genename<-rep(nameofit, times= length(fr$stop))
+            fr$Genename<-Genename
+            
+            
+            return(fr)
+            }) %>% bind_rows()
+           
+            
             dir<-toString(opt$dir)
 
             if(!is.null(opt$dirpattern)){
                 pattern<-toString(opt$dirpattern)
                 pattern1<-paste0(pattern,"$")
-                c<-list.files(path=dir , pattern=pattern1, full.names=TRUE)
+                c<-list.files(path=dir ,pattern=pattern1, full.names=TRUE)
             }
             
             if(is.null(opt$dirpattern)){
                 pattern1<-paste0(".bed","$")
                 c<-list.files(path=dir , pattern=pattern1, full.names=TRUE)
             }
-            
-            
+
             
             if(is.null(opt$singleplots)){
-            readdata <- function(x)
-            {
+            
+              
+              if(is.null(opt$notabixfiles)){
+              # hi<-lapply(name3, function(y){
+              f<-lapply(name3[[1]],function(x){
+                
+                startsplit<-strsplit(x, ',', fixed=TRUE)
+                
+                range<-toString(startsplit[[1]][2])
+                splitfromchr<-strsplit(range, ':', fixed=TRUE)
+                chr<-splitfromchr[[1]][1]
+                splitpositions<-strsplit(splitfromchr[[1]][2], '-', fixed=TRUE)
+                
+                start1<-splitpositions[[1]][1]
+                stop1<-splitpositions[[1]][2]
+                nameofit<-startsplit[[1]][1]
+                new<-paste0(chr,":",start1,"-",stop1)
+                mkrd<-lapply(c,function(y){
+                  
+                test<-tabix.read.table(y,new,col.names = TRUE,stringsAsFactors = FALSE) 
+                test<-as.data.frame(test)
+                
+                colnames(test)<-c('Chr','start','stop', 'Ecopynum')
+                colit<-rep('black', times= length(test$stop))
+                test$COLOR<-colit
+                name<-rep(toString(basename(y)), times= length(test$stop))
+                test$FILENAME<-name
+                Genename<-rep(nameofit, times= length(test$stop))
+                test$Genename<-Genename
+               
+                return(test)}) %>% bind_rows()
 
-              mkrd <- fread(x)
-              mkrd<-as.data.frame(mkrd)
+                return(mkrd)
+              }) %>% bind_rows()
+              
+              f<-as.data.table(f)
+              
+             
+              first<-as.data.table(first)
+              df<-rbind(f,first) %>% bind_rows()}
 
-              colnames(mkrd)<-c('Chr','start','stop', 'Ecopynum')
-              mkrd<- mkrd %>% filter(mkrd$Chr %in% lschr$name)
-
-              df=NULL
+              
+            }
+            if(!is.null(opt$notabixfiles)){
+              
+              gn<-lapply(c, function(g)
+              {
+              filter<-lapply(name3[[1]],function(x){
+                bname<-basename(g)
+                fr<-fread(g)
+                fr<-as.data.frame(fr)
+                startsplit<-strsplit(x, ',', fixed=TRUE)
+                
+                range<-toString(startsplit[[1]][2])
+                splitfromchr<-strsplit(range, ':', fixed=TRUE)
+                chr<-splitfromchr[[1]][1]
+                splitpositions<-strsplit(splitfromchr[[1]][2], '-', fixed=TRUE)
+                
+                start1<-splitpositions[[1]][1]
+                stop1<-splitpositions[[1]][2]
+                nameofit<-startsplit[[1]][1]
+                
+                colnames(fr)<-c('Chr','start','stop', 'Ecopynum')
+               
+                
+                fr2<- fr[fr[['Chr']] == chr,]
+                fr1 <- fr2 %>% filter(as.numeric(start) <= as.numeric(stop1))
+                fr <- fr1 %>% filter(as.numeric(stop) >= as.numeric(start1))
+                #fr<- fr[as.numeric(fr[['start']]) >= start1, fr[['stop']] <= stop1,]
+                
+                namef<-rep(bname, times= length(fr$stop))
+                colit<-rep("black", times= length(fr$stop))
+                fr$FILENAME<-namef
+                fr$COLOR<-colit
+                
+                Genename<-rep(nameofit, times= length(fr$stop))
+                fr$Genename<-Genename
+                
+                
+                return(fr)
+              }) %>% bind_rows()
+              
+              return(filter)
+              })%>% bind_rows()
+     
+              
+              first<-as.data.table(first)
+              df<-rbind(gn,first) %>% bind_rows()
+      
+            }
+              
               dt=NULL
               exonfilt=NULL
-
-
-              colit<-rep('black', times= length(mkrd$stop))
-              mkrd$COLOR<-colit
-              return(mkrd)
-            }
-            print(c)
-
-            f<-lapply(c,readdata)
-
-
-            f<-mapply(cbind, f, "FILENAME"=1:length(f), SIMPLIFY=F)
-
-            d<- do.call("rbind", f)
-            df<-rbind(fr, data.frame(d))
-            }
             
             if(!is.null(opt$singleplots)){
+              if(!is.null(opt$notabixfiles)){
 
-              readdatasingle <- function(x)
-              {
+                df<-lapply(c, function(g)
+                {
+                  filter<-lapply(name3[[1]],function(x){
+                    bname<-basename(g)
+                    fr<-fread(g)
+                    fr<-as.data.frame(fr)
+                    startsplit<-strsplit(x, ',', fixed=TRUE)
+                    
+                    range<-toString(startsplit[[1]][2])
+                    splitfromchr<-strsplit(range, ':', fixed=TRUE)
+                    chr<-splitfromchr[[1]][1]
+                    splitpositions<-strsplit(splitfromchr[[1]][2], '-', fixed=TRUE)
+                    
+                    start1<-splitpositions[[1]][1]
+                    stop1<-splitpositions[[1]][2]
+                    nameofit<-startsplit[[1]][1]
+                    
+                    colnames(fr)<-c('Chr','start','stop', 'Ecopynum')
 
-                mkrd <- fread(x)
-                mkrd<-as.data.frame(mkrd)
+                fr2<- fr[fr[['Chr']] == chr,]
+                fr1 <- fr2 %>% filter(as.numeric(start) <= as.numeric(stop1))
+                fr <- fr1 %>% filter(as.numeric(stop) >= as.numeric(start1))
+                #fr<- fr[as.numeric(fr[['start']]) >= start1, fr[['stop']] <= stop1,]
+                
+                namef<-rep(bname, times= length(fr$stop))
+                colit<-rep("black", times= length(fr$stop))
+                fr$FILENAME<-namef
+                fr$COLOR<-colit
 
-                colnames(mkrd)<-c('Chr','start','stop', 'Ecopynum')
-                mkrd<- mkrd %>% filter(mkrd$Chr %in% lschr$name)
-                #mkrd<- mkrd[mkrd$Chr %in% listchr,]
-               
+                Genename<-rep(nameofit, times= length(fr$stop))
+                fr$Genename<-Genename
+                
+                
+                return(fr)
+                  }) %>% bind_rows()
+                  
+                  return(filter)
+                })
+                first<-as.data.table(first)
+                df<-rbind(gn,first) %>% bind_rows()
 
-                name<-toString(basename(x))
-                FILENAME<- rep(name, times= length(mkrd$stop))
-                mkrd$FILENAME<-FILENAME
-
-                df=NULL
-                dt=NULL
-                exonfilt=NULL
-
-
-                colit<-rep('black', times= length(mkrd$stop))
-                mkrd$COLOR<-colit
-                mkrd<- rbind(fr,data.frame(mkrd))
-
-               return(mkrd)
               }
-              df<-lapply(c,readdatasingle)
-              print(length(df))
+              if(is.null(opt$notabixfiles)){
+                df<-lapply(c,function(y){
+                  
+                     mkrd<-lapply(name3[[1]],function(x){
+                       startsplit<-strsplit(x, ',', fixed=TRUE)
+                       
+                       range<-toString(startsplit[[1]][2])
+                       splitfromchr<-strsplit(range, ':', fixed=TRUE)
+                       chr<-splitfromchr[[1]][1]
+                       splitpositions<-strsplit(splitfromchr[[1]][2], '-', fixed=TRUE)
+                       
+                       start1<-splitpositions[[1]][1]
+                       stop1<-splitpositions[[1]][2]
+                       nameofit<-startsplit[[1]][1]
+                       new<-paste0(chr,":",start1,"-",stop1)
+                    
+                    test<-tabix.read.table(y,new,col.names = TRUE,stringsAsFactors = FALSE) 
+                    test<-as.data.frame(test)
+                    
+                    colnames(test)<-c('Chr','start','stop', 'Ecopynum')
+                    colit<-rep('black', times= length(test$stop))
+                    test$COLOR<-colit
+                    name<-rep(toString(basename(y)), times= length(test$stop))
+                    fname<-rep(toString(basename(y)))
+                    test$FILENAME<-name
+                    Genename<-rep(nameofit, times= length(test$stop))
+                    test$Genename<-Genename
+                    
+                    first<-as.data.table(first)
+                    test<-rbind(test,first) %>% bind_rows()
 
-              #df<- do.call("rbind", c)
-              #df<-rbind(fr,data.frame(d))
+                    return(test)}) %>% bind_rows()
 
+                  return(mkrd)
+                })
+                
+                
+              }
+              
             }
             
-            }
+          }
       
       if(is.null(opt$dir)){
         df<-as.data.frame(fread(opt$file))
         colnames(df)<-c('Chr','start','stop', 'Ecopynum')
         
       }
-        
       
     }
     
@@ -381,13 +523,13 @@ getInput<-function(){
 
 dataf<-getInput()
 if(is.null(opt$singleplots)){
-data<-as.data.frame(dataf)
+data<-setDF(dataf)
 
 }
 if(!is.null(opt$singleplots)){
   data<-dataf
-}
 
+}
 
 #####################################
 
@@ -847,9 +989,6 @@ if(!is.null(opt$cordfile) && !is.null(opt$plotTogether) &&  is.null(opt$dir)){
       plot<-df %>% ggplot(aes(x=start, y=Ecopynum, group=GeneNames)) + geom_line(aes(color=GeneNames), alpha=.5) +scale_alpha_manual(values=c(1,0.4,1)) +scale_color_manual(values=colorit) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) + xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number")  + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title=element_text(hjust=0.5),panel.grid.major=element_blank(),panel.grid.minor=element_blank(), axis.line=element_line(colour="black"))
       plot<-plot + geom_hline(yintercept=2, color="light grey")
 
-      
-      
-      
       ###ANNOTATION TRACK###
       
       if((!is.null(opt$annotation) | !is.null(opt$non) ) | (!is.null(opt$non) & !is.null(opt$annotation))){
@@ -929,16 +1068,6 @@ if(!is.null(opt$cordfile) && !is.null(opt$plotTogether) &&  is.null(opt$dir)){
   }
 }
 
-##############
-
-
-
-
-
-
-
-
-
 
 #####################################
 
@@ -956,68 +1085,123 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
     i<-1
     list<-NULL
     hold<-NULL
-    while(i <= length(chrom)){
+
+    thename<-lapply(name3[[1]],function(x){
+      startsplit<-strsplit(x, ',', fixed=TRUE)
+      nameofit<-startsplit[[1]][1]
+    if(is.null(opt$lineColor)){
+      #Create String For Title With Gene Name
+      getnamegene<-toString(nameofit)
+      titlestring<-toString("Gene")
+      titlename<-paste(getnamegene,titlestring)
       
-      if(i >= 0){
-        
+      #Rename File 
+      if(is.null(opt$png)){
+        getnamegene<-toString(nameofit)
+        endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
+        nameoffile<-paste(getnamegene,endfilename, sep="") 
+      }
+      
+      if(!is.null(opt$png)){
+        getnamegene<-toString(nameofit)
+        endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
+        nameoffile<-paste(getnamegene,endfilename, sep="") 
+      }
+      return(nameoffile)
+    }
+    })
+    
+
+    lapply(name3[[1]],function(x){
+     
+      startsplit<-strsplit(x, ',', fixed=TRUE)
+      range<-toString(startsplit[[1]][2])
+      splitfromchr<-strsplit(range, ':', fixed=TRUE)
+      chrN<-splitfromchr[[1]][1]
+      splitpositions<-strsplit(splitfromchr[[1]][2], '-', fixed=TRUE)
+      start1<-splitpositions[[1]][1]
+      stop1<-splitpositions[[1]][2]
+      nameofit<-startsplit[[1]][1]
         # Filter Based on Each Input
-        test2<-data %>% filter(data$Chr %in% chrom[[i]]$Chr)
-        test2<-test2 %>% filter(as.numeric(test2$start) <= as.numeric(chrom[[i]]$stop))
-        test2<-test2 %>% filter(as.numeric(test2$stop) >= as.numeric(chrom[[i]]$start))
+
+          `%notlike%`<-Negate(`%like%`)
+          
+          #test2<-lapply(x,function(z){
+            test1<-data %>% filter(data$Genename %in% nameofit)
+            (test2<- do.call(cbind,test1))
+            test2<-as.data.frame(test2)
+            
+            
+              #Create String For Title With Gene Name
+              getnamegene<-toString(nameofit)
+              titlestring<-toString("Gene")
+              titlename<-paste(getnamegene,titlestring)
+              
+              
+              
+              xstring<-chrN
+              str<-toString("Chromosome Position (")
+              str1<-paste(str,xstring)
+              str2<-toString(")")
+              xaxisname<-paste(str1,str2)
         
-        if(is.null(opt$lineColor)){
-          #Create String For Title With Gene Name
-          getnamegene<-toString(rownames(chrom[[i]]))
-          titlestring<-toString("Gene")
-          titlename<-paste(getnamegene,titlestring)
-          
-          #Rename File 
-          if(is.null(opt$png)){
-          endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
-          nameoffile<-paste(getnamegene,endfilename, sep="") 
-          }
-          
-          if(!is.null(opt$png)){
-            endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
-            nameoffile<-paste(getnamegene,endfilename, sep="") 
-          }
-          
-          xstring<-chrom[[i]]$Chr
-          str<-toString("Chromosome Position (")
-          str1<-paste(str,xstring)
-          str2<-toString(")")
-          xaxisname<-paste(str1,str2)
-          
-          col<-test2 %>% select("COLOR","FILENAME")
-          col<-unique(col)
-          
-          col1<-as.character(col$COLOR)
-          names(col1)<-as.character(col$FILENAME)
-          h<-toString(basename(opt$file))
-          a<-toString(rbind(str_trunc(h,20,"right")))
-          
-          
-          
-          if(is.null(opt$lineMult)){
-            colofline=toString("blue")
-          }
-          
-          if(!is.null(opt$lineMult)){
-            getcol<-toString(opt$lineMult)
-            colofline<-toString(getcol)  
-          }
-          if(!is.null(opt$rename)){
-            a<-toString(opt$rename)
-          }
-          if(is.null(opt$rename)){
-            a<-toString(rbind(str_trunc(h,20,"right")))
-          }
-          
-          
-          plot<-test2 %>% ggplot(aes(x=start, y=Ecopynum, group=FILENAME,color=COLOR)) +scale_color_manual(values=c("black",colofline), labels=c("Files From Directory",a), name='Data')+ geom_line() + ggtitle(bquote(paste(italic(.(getnamegene)),paste(" "),paste(.(titlestring))))) + xlab(xaxisname) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title=element_text(hjust=0.5),panel.grid.major=element_blank(),panel.grid.minor=element_blank(), axis.line=element_line(colour="black"))
-          plot<-plot + geom_hline(yintercept=2, color="light grey")
-          
+              h<-toString(basename(opt$file))
+
+              `%notlike%`<-Negate(`%like%`)
+
+            h<-toString(basename(opt$file))
+            
+            #Rename File 
+            if(is.null(opt$png)){
+              getnamegene<-toString(nameofit)
+              endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
+              nameoffile<-paste0(getnamegene,endfilename, sep="") 
+            }
+            
+            if(!is.null(opt$png)){
+              getnamegene<-toString(nameofit)
+              endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
+              nameoffile<-paste0(getnamegene,endfilename, sep="") 
+            }
+            
+            if(is.null(opt$lineMult)){
+              colofline=toString("blue")
+            }
+            if(is.null(opt$lineMult)){
+              colofline=toString("blue")
+            }
+            
+            if(!is.null(opt$lineMult)){
+              getcol<-toString(opt$lineMult)
+              colofline<-toString(getcol)  
+            }
+            if(!is.null(opt$rename)){
+              a<-toString(opt$rename)
+            }
+            if(is.null(opt$rename)){
+              a<-toString(rbind(str_trunc(h,20,"right")))
+            }
+            
+            getnamegene<-unique(nameofit)
+            titlestring<-"Gene"
+            xstring<-unique(chrN)
+            str<-toString("Chromosome Position (")
+            str1<-paste(str,xstring)
+            str2<-toString(")")
+            xaxisname<-paste(str1,str2)
+            test2<-test2 %>%group_by(FILENAME)
+           vars<- c("start","Ecopynum","COLOR","FILENAME")
+           test<- test2[vars] 
+           test2<-as.data.frame(test)
+           test2$start=as.numeric(as.character(test2$start))
+           test2$FILENAME=as.factor(as.character(test2$FILENAME))
+           test2$Ecopynum=as.numeric(as.character(test2$Ecopynum))
         
+           plot<-ggplot(test2,aes(x=as.numeric(start), y=Ecopynum,group=FILENAME, color=COLOR)) +scale_color_manual(values=c("black",colofline), labels=c("Files From Directory",a), name='Data')+ geom_line() +ggtitle(bquote(paste(italic(.(getnamegene)),paste(" "),paste(.(titlestring))))) + xlab(xaxisname) + ylab("Estimated Copy Number") + scale_x_continuous( n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title=element_text(hjust=0.5),panel.grid.major=element_blank(),panel.grid.minor=element_blank(), axis.line=element_line(colour="black"))
+           plot2<-plot + geom_hline(yintercept=2, color="light grey") 
+           plot<-plot2 + geom_line(data=subset(test2,FILENAME %like% "Inital"),color=colofline)
+          
+         
           ###ANNOTATION TRACK###
           
           if((!is.null(opt$annotation) | !is.null(opt$non) ) | (!is.null(opt$non) & !is.null(opt$annotation))){
@@ -1034,9 +1218,9 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
             names(exondf)[exonendcol]<-"end"
             names(exondf)[exonchrcol]<-"Chr"
             
-            exondf<-exondf %>% filter(exondf$Chr %in% chrom[[i]]$Chr)
-            exondf<-exondf %>% filter(as.numeric(exondf$start) <= as.numeric(chrom[[i]]$stop))
-            exondf<-exondf %>% filter(as.numeric(exondf$end) >= as.numeric(chrom[[i]]$start))
+            exondf<-exondf %>% filter(exondf$Chr %in% chrN)
+            exondf<-exondf %>% filter(as.numeric(exondf$start) <= as.numeric(stop1))
+            exondf<-exondf %>% filter(as.numeric(exondf$end) >= as.numeric(start1))
             
             if(1 <= length(exondf$start)){
               j<-1
@@ -1083,42 +1267,39 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
           }
           ##########Plot###########
           
-          ggsave(plot=plot, width=7, height=6, dpi=300, filename=nameoffile)
           
-          if(!is.null(opt$png) && !is.null(opt$multifile)){
-            list1<-c(nameoffile)
-            
-            pngFiles<-rbind(list, (list1))
-            merge.png.pdf (pdfFile = paste0(i,".pdf"), pngFiles = pngFiles, deletePngFiles = T)
-            
-            hold1<-c(paste0(i,".pdf"))
-            hold<- rbind(hold,hold1)
-            
-            if(!is.null(opt$multifile)){
-              filename<-toString(opt$multifile)
-              pdf_combine(hold,output=filename)
-            }
-            
-          }
-          if(is.null(opt$png) && !is.null(opt$multifile)){
-            
-            list1<-c(nameoffile)
-            list<-rbind(list, (list1))
-            
-            if(!is.null(opt$multifile)){
-              filename<-toString(opt$multifile)
-              pdf_combine(list, output=filename)
-            }
-          }
-        }
+           ggsave(plot=plot, width=7, height=6, dpi=300, filename=nameoffile)
+          
+          })
+  
+  
+  
+  #####################
+    if( (!is.null(opt$multifile) ) && !(is.null(opt$png)) ){
+      finalname<- toString(opt$multifile)
+
+
+      nameitagain<-toString(thename)
+      nameitagain<-file.path(thename)
+
+      merge.png.pdf (pdfFile = paste0(finalname), pngFiles = nameitagain, deletePngFiles = T)
+
+    }
+    if( (!is.null(opt$multifile) ) && (is.null(opt$png)) ){
+      finalname<- toString(opt$multifile)
+      nameitagain<-file.path(thename)
+      pdf_combine(nameitagain,output=finalname)
+    }
+    if(!is.null(opt$multifile) && (is.null(opt$png))){
+      nameitagain<-file.path(thename)
+
+      lapply(nameitagain,function(x){file.remove(x)})
+    }
         i<-i + 1
-        
+
         if(!is.null(opt$lineColor)){
           warning("-l FLAG MUST BE NOT BE USED")
         }
-      }
-      
-    }
     
     if(!is.null(opt$multifile)){
       lapply(list,function(x){file.remove(x)})
@@ -1166,9 +1347,9 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
     gh<-as.character(newdataset$GeneName)
     names(gh)<-as.character(newdataset$Chr)
     hh<-toString(paste(gg,":",gh))
-    
+    #tname<-paste("Genes:", toString(gh))
     chr1<-paste(hh)
-    
+    #chromname<-str_replace(chromname,fixed(",")," , ")
     tname<-paste(toString(gh))
     df=NULL
     dt=NULL
@@ -1322,9 +1503,6 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
         plot<-plot + geom_line(data=subset(df,dog %like% "Inital"),color=colofline)  
         plot<-plot + geom_hline(yintercept=2, color="light grey")
         
-  
-        ###ANNOTATION TRACK###
-        
         if((!is.null(opt$annotation) | !is.null(opt$non) ) | (!is.null(opt$non) & !is.null(opt$annotation))){
           
           exondf<-as.data.frame(fread(opt$annotation))
@@ -1415,82 +1593,78 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
 ######################
 ###Plot Directory#####
 ######################
-print(length(data))
+
 
 if(!is.null(opt$singleplots)){
+  
 #########Plotting with -d flag##############
 if(!is.null(opt$dir) && !is.null(opt$cordfile)){
-  
+  if(is.null(opt$notabixfiles)){
   #########plotting without -t flag################
   if(is.null(opt$plotTogether)){
     
     i<-1
     list<-NULL
     hold<-NULL
-    while(i <= length(chrom)){
-      
-      if(i >= 0){
+   
         whatname<-lapply(data,function(x){
           `%notlike%`<-Negate(`%like%`)
           x<-data.frame(x)
-          tes1<- unique(x$FILENAME)
-          print(tes1)
-          tes1<-as.data.frame(tes1)
-          colnames(tes1)<-"names"
-          tes1<- tes1 %>% filter(tes1$names %notlike% "Inital")
+          x<- x %>% filter(x$FILENAME %notlike% "Inital")
+          x$getthename<-paste(x$FILENAME,x$Genename,sep="_")
+          tes1<-unique(x$getthename)
+
         })
         
-        thename<-lapply(whatname,function(name){
-          getnamegene<-toString(rownames(chrom[[i]]))
-          if(is.null(opt$png)){
-            endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
-            nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
-          }
           
-          if(!is.null(opt$png)){
-            endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
-            nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
-          }
+        thename<-lapply(unlist(whatname),function(name){
+         
+         
+            if(is.null(opt$png)){
+              endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
+              nameoffile<-paste0(name,endfilename, sep="") 
+            }
+            
+            if(!is.null(opt$png)){
+              endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
+              nameoffile<-paste0(name,endfilename, sep="") 
+            }
           return(file.path(nameoffile))
+           
         })
+        
+
         lapply(data,function(x){
         # Filter Based on Each Input
         test2<-data.table(x)
-        test2<- test2[which(Chr <= chrom[[i]]$Chr)]
-        #test2<-data %>% filter(data$Chr %in% chrom[[i]]$Chr)
-        
-        
-        
-        test2<- test2[start <= as.numeric(chrom[[i]]$stop)]
-        test2<-test2[stop >= as.numeric(chrom[[i]]$start)]
-        #test2<-test2 %>% filter(as.numeric(start) <= as.numeric(chrom[[i]]$stop))
-        #test2<-test2 %>% filter(as.numeric(stop) >= as.numeric(chrom[[i]]$start))
-        
-        
-        `%notlike%`<-Negate(`%like%`)
-        tes1<-unique(test2$FILENAME)
-        tes1<-as.data.frame(tes1)
-        colnames(tes1)<-"names"
-        tes1<- tes1 %>% filter(tes1$names %notlike% "Inital")
-        
-        
-        lapply(tes1$names,function(x){
-          test2<- test2[which(FILENAME == toString(x)| FILENAME == "Inital")]
-          test2<-test2 %>% group_by(FILENAME)
-          name<-x
-          `%notlike%`<-Negate(`%like%`)
-        tes1<-unique(test2$FILENAME)
-        tes1<-as.data.frame(tes1)
-        colnames(tes1)<-"names"
-        tes1<- tes1 %>% filter(tes1$names %notlike% "Inital")
+        lapply(name3[[1]],function(x){
           
+          startsplit<-strsplit(x, ',', fixed=TRUE)
+          range<-toString(startsplit[[1]][2])
+          splitfromchr<-strsplit(range, ':', fixed=TRUE)
+          chrN<-splitfromchr[[1]][1]
+          splitpositions<-strsplit(splitfromchr[[1]][2], '-', fixed=TRUE)
+          start1<-splitpositions[[1]][1]
+          stop1<-splitpositions[[1]][2]
+          nameofit<-startsplit[[1]][1]
+
+          test2<-test2 %>% filter(Genename == nameofit)
+          
+          (test2<- do.call(cbind,test2))
+          test2<-as.data.frame(test2)
+          
+        `%notlike%`<-Negate(`%like%`)
+        tes1<- test2 %>% filter(test2$FILENAME %notlike% "Inital")
+        name<-unique(tes1$FILENAME)
+        
         if(is.null(opt$lineColor)){
           #Create String For Title With Gene Name
-          getnamegene<-toString(rownames(chrom[[i]]))
-         
+          getnamegene<-nameofit
+          #getnamegene<-italic(getnamegene)
           titlestring<-toString("Gene")
           
-         #Rename File 
+          
+          #Rename File 
           if(is.null(opt$png)){
             endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
             nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
@@ -1532,8 +1706,16 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
             getcol<-toString(opt$lineMult)
             colofline<-toString(getcol)  
           }
+          
+          vars<- c("start","Ecopynum","COLOR","FILENAME")
+          test<- test2[vars] 
+          test2<-as.data.frame(test)
+          test2$start=as.numeric(as.character(test2$start))
+          test2$FILENAME=as.factor(as.character(test2$FILENAME))
+          test2$Ecopynum=as.numeric(as.character(test2$Ecopynum))
+          test2 <- test2 %>% group_by(FILENAME)
          
-              plot<-test2 %>% ggplot(aes(x=start, y=Ecopynum), group=FILENAME,color=COLOR)+ geom_line(data=subset(test2,FILENAME %like% name),aes(color="black"))+ geom_line(data=subset(test2,FILENAME %like% "Inital"),aes(color=colofline))  + scale_color_manual(values=c("black",colofline), labels=c(name1,a), name='Data') + ggtitle(bquote(paste(italic(.(getnamegene)),paste(" "),paste(.(titlestring))))) + xlab(xaxisname) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title=element_text(hjust=0.5),panel.grid.major=element_blank(),panel.grid.minor=element_blank(), axis.line=element_line(colour="black"))
+              plot<-ggplot(test2,aes(x=start, y=Ecopynum), group=FILENAME,color=COLOR)+ geom_line(data=subset(test2,FILENAME %like% name),aes(color="black"))+ geom_line(data=subset(test2,FILENAME %like% "Inital"),aes(color=colofline))+ scale_color_manual(values=c("black",colofline), labels=c(name1,a), name='Data') + ggtitle(bquote(paste(italic(.(getnamegene)),paste(" "),paste(.(titlestring))))) + xlab(xaxisname) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title=element_text(hjust=0.5),panel.grid.major=element_blank(),panel.grid.minor=element_blank(), axis.line=element_line(colour="black"))
               
               plot<-plot + geom_hline(yintercept=2, color="light grey")
               
@@ -1542,51 +1724,49 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
         
         ###ANNOTATION TRACK###
         
-        if((!is.null(opt$annotation) | !is.null(opt$non) ) || (!is.null(opt$non) & !is.null(opt$annotation))){
-          
-          exondf<-as.data.frame(fread(opt$annotation))
-          exonstartcol<-as.numeric(exonstartcol)
-          exonendcol<-as.numeric(exonendcol)
-          exonchrcol<-as.numeric(exonchrcol)
-          exoncolor<-toString(exoncolor)
-          exonalpha<-as.numeric(exonalpha)
-          exonborder<-tolower(toString(exonborder))
-          
-          names(exondf)[exonstartcol]<-"start"
-          names(exondf)[exonendcol]<-"end"
-          names(exondf)[exonchrcol]<-"Chr"
-          
-          exondf<-exondf %>% filter(exondf$Chr %in% chrom[[i]]$Chr)
-          exondf<-exondf %>% filter(as.numeric(exondf$start) <= as.numeric(chrom[[i]]$stop))
-          exondf<-exondf %>% filter(as.numeric(exondf$end) >= as.numeric(chrom[[i]]$start))
-          print(exondf)
-          if(1 <= length(exondf$start)){
-            
-            j<-1
-            
-            while(j <= length(exondf$start)){
-              
-              for(j in 1:nrow(exondf)){
+              if((!is.null(opt$annotation) | !is.null(opt$non) ) | (!is.null(opt$non) & !is.null(opt$annotation))){
                 
-                strte<-exondf[j, "start"]
-                stope<-exondf[j, "end"]
+                exondf<-as.data.frame(fread(opt$annotation))
+                exonstartcol<-as.numeric(exonstartcol)
+                exonendcol<-as.numeric(exonendcol)
+                exonchrcol<-as.numeric(exonchrcol)
+                exoncolor<-toString(exoncolor)
+                exonalpha<-as.numeric(exonalpha)
+                exonborder<-tolower(toString(exonborder))
                 
-                if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
-                  
-                  plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder) + scale_fill_discrete(labels=c(nameexon))+ scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon))
-                  plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)
-                  
-                }
+                names(exondf)[exonstartcol]<-"start"
+                names(exondf)[exonendcol]<-"end"
+                names(exondf)[exonchrcol]<-"Chr"
                 
-                else{
-                  plot<-plot + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder) 
+                exondf<-exondf %>% filter(exondf$Chr %in% chrN)
+                exondf<-exondf %>% filter(as.numeric(exondf$start) <= as.numeric(stop1))
+                exondf<-exondf %>% filter(as.numeric(exondf$end) >= as.numeric(start1))
+                
+                if(1 <= length(exondf$start)){
+                  j<-1
                   
+                  while(j <= length(exondf$start)){
+                    
+                    for(j in 1:nrow(exondf)){
+                      
+                      strte<-exondf[j, "start"]
+                      stope<-exondf[j, "end"]
+                      
+                      if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+                        plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder) + scale_fill_discrete(labels=c(nameexon))+ scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon))
+                        plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)
+                        
+                      }
+                      
+                      else{
+                        plot<-plot + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder) 
+                        
+                      }
+                    }
+                    j<-j+1
+                  } 
                 }
               }
-              j<-j+1
-            } 
-          }
-        }
         #########################
         
         ###########Box###########
@@ -1598,7 +1778,6 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
             
             a<-subset(a,rownames(a) %in% name | rownames(a) %in% "Inital")
             print(a)
-            
             
             fun_mean <- function(x){
               return(data.frame(y=mean(x),label=mean(x,na.rm=T)))}
@@ -1616,20 +1795,19 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
         })
         
         
-        
-        
-        
         })
+        
+        
         if( (!is.null(opt$multifile) ) && !(is.null(opt$png)) ){
           finalname<- toString(opt$multifile)
-          
-          
+
+
           nameitagain<-toString(thename)
           nameitagain<-file.path(thename)
-          
-          
+
+
           merge.png.pdf (pdfFile = paste0(finalname), pngFiles = nameitagain, deletePngFiles = T)
-          
+
         }
         if( (!is.null(opt$multifile) ) && (is.null(opt$png)) ){
           finalname<- toString(opt$multifile)
@@ -1641,22 +1819,47 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
           
           lapply(nameitagain,function(x){file.remove(x)})
         }
-      i<-i + 1
+      
         
         
       if(!is.null(opt$lineColor)){
         warning("-l FLAG MUST BE NOT BE USED")
       }
-
-  }
+  
+     
 }
+
 
 ##########plotting -d and -t flags#################
 if(!is.null(opt$plotTogether)){
   i<-1
   list<-NULL
   hold<-NULL
+  whatname<-lapply(data,function(x){
+    `%notlike%`<-Negate(`%like%`)
+    x<-data.frame(x)
+    tes1<- unique(x$FILENAME)
+    tes1<-as.data.frame(tes1)
+    colnames(tes1)<-"names"
+    tes1<- tes1 %>% filter(tes1$names %notlike% "Inital")
+  })
+  thename<-lapply(whatname,function(name){
+    getnamegene<-toString(rownames(chrom[[i]]))
+    if(is.null(opt$png)){
+      endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
+      nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
+    }
+    
+    if(!is.null(opt$png)){
+      endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
+      nameoffile<-paste0(name,"_",getnamegene,endfilename, sep="") 
+    }
+    return(file.path(nameoffile))
+  })
   
+  lapply(data,function(data){
+    
+
   colored<-randomColor()
   
   getname<-strsplit(toupper(opt$plotTogether), split=',', fixed=TRUE)
@@ -1696,7 +1899,7 @@ if(!is.null(opt$plotTogether)){
   tname<-paste(toString(gh))
   chr2<-paste("Chromosome Position(s) (" )
   chr1<-paste(hh)
-  #chromname<-str_replace(chromname,fixed(",")," , ")
+
  
   df=NULL
   dt=NULL
@@ -1789,7 +1992,6 @@ if(!is.null(opt$plotTogether)){
       plot<-plot + geom_hline(yintercept=2, color="light grey")
       plot<-plot 
    
- 
     
     ###ANNOTATION TRACK###
     
@@ -1826,7 +2028,8 @@ if(!is.null(opt$plotTogether)){
             stope<-exondf[j, "end"]
             
             if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
-              plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon))+ guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) +           xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw()
+              plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon))+ guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) +           xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw()+ theme(plot.title = element_text(hjust = 0.5),panel.border = element_blank(), panel.grid.major = element_blank(),
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
               plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder) 
               
             }
@@ -1858,44 +2061,10 @@ if(!is.null(opt$plotTogether)){
     
     ggsave(plot=plot, width=7, height=6, dpi=300, filename=shortname)
     
-    
-    if(!is.null(opt$png) && !is.null(opt$multifile)){
-      list1<-c(shortname)
-      
-      pngFiles<-rbind(list, (list1))
-      merge.png.pdf (pdfFile = paste0(shortname,".pdf"), pngFiles = pngFiles, deletePngFiles = T)
-      
-      hold1<-c(paste0(shortname,".pdf"))
-     
-      hold<- rbind(hold,hold1)
-      
-      if(!is.null(opt$multifile)){
-        filename<-toString(opt$multifile)
-        pdf_combine(hold,output=filename)
-        
-      }
-      
-    }
-    if(is.null(opt$png) && !is.null(opt$multifile)){
-      
-      list1<-c(shortname)
-      list<-rbind(list, (list1))
-      
-      if(!is.null(opt$multifile)){
-        filename<-toString(opt$multifile)
-        pdf_combine(list, output=filename)
-      }
     }
     
     }
-  }
-  if(!is.null(opt$multifile)){
-    lapply(list,function(x){file.remove(x)})
-  }
-  
-  if(!is.null(opt$png)){
-    lapply(hold,function(x){file.remove(x)})
-  }
+
   
   
   if(!is.null(opt$plotTogether) && (!is.null(opt$lineColor))){
@@ -1944,7 +2113,8 @@ if(!is.null(opt$plotTogether)){
         colorit<-c(getcol[[1]])
         
         plot<-df %>% ggplot(aes(x=start, y=Ecopynum, group=dog),color=GeneNames)+ geom_line(data=subset(df,dog %like% name),color="Black") + geom_line(data=subset(df,dog %like% "Inital"),aes(color=GeneNames)) + scale_alpha_manual(values=c(1,0.4,1))  +scale_color_manual(values=colorit, name=name1) +  ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) +
-          xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title=element_text(hjust=0.5),panel.grid.major=element_blank(),panel.grid.minor=element_blank(), axis.line=element_line(colour="black"))
+          xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title=element_text(hjust=0.5),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                                                                                                                                                                                                                                    panel.background = element_blank(), axis.line=element_line(colour="black"))
         
         plot<-plot + geom_hline(yintercept=2, color="light grey")
         plot<-plot 
@@ -1985,7 +2155,8 @@ if(!is.null(opt$plotTogether)){
               stope<-exondf[j, "end"]
               
               if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
-                plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) +           xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw()
+                plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) + xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title = element_text(hjust = 0.5),panel.border = element_blank(), panel.grid.major = element_blank(),
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
                 plot1<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)
                 plot<-plot1 
               }
@@ -2017,45 +2188,14 @@ if(!is.null(opt$plotTogether)){
       ##########Plot#########
       
       ggsave(plot=plot, width=7, height=6, dpi=300, filename=shortname)
-        if(!is.null(opt$png) && !is.null(opt$multifile)){
-          list1<-c(shortname)
-          
-          pngFiles<-rbind(list, (list1))
-          merge.png.pdf (pdfFile = paste0(shortname,".pdf"), pngFiles = pngFiles, deletePngFiles = T)
-          
-          hold1<-c(paste0(shortname,".pdf"))
-          
-          hold<- rbind(hold,hold1)
-          
-          if(!is.null(opt$multifile)){
-            filename<-toString(opt$multifile)
-            pdf_combine(hold,output=filename)
-            
-          }
-          
-        }
-        if(is.null(opt$png) && !is.null(opt$multifile)){
-         
-          list1<-c(shortname)
-          list<-rbind(list, (list1))
-          
-          if(!is.null(opt$multifile)){
-            filename<-toString(opt$multifile)
-            pdf_combine(list, output=filename)
-          }
-        }
+        
+       
         
       }
     
-    if(!is.null(opt$multifile)){
-      lapply(list,function(x){file.remove(x)})
-    }
-    
-    if(!is.null(opt$png)){
-      lapply(hold,function(x){file.remove(x)})
-    }
         
-
+    
+  
     if(as.numeric(length(getcol[[1]])) <2){
       warning("TOO FEW ARGUMENTS ALLOWED FOR -l FLAG")
       stop()
@@ -2070,14 +2210,222 @@ if(!is.null(opt$plotTogether)){
       warning("TOO MANY ARGUMENTS ALLOWED FOR -t FLAG")
       stop()
     }
+  }
+  }
+  })
+  if( (!is.null(opt$multifile) ) && !(is.null(opt$png)) ){
+    finalname<- toString(opt$multifile)
+    
+    
+    nameitagain<-toString(thename)
+    nameitagain<-file.path(thename)
+    
+    
+    merge.png.pdf (pdfFile = paste0(finalname), pngFiles = nameitagain, deletePngFiles = T)
+    
+  }
+  if( (!is.null(opt$multifile) ) && (is.null(opt$png)) ){
+    finalname<- toString(opt$multifile)
+    nameitagain<-file.path(thename)
+    pdf_combine(nameitagain,output=finalname)
+  }
+  if(!is.null(opt$multifile) && (is.null(opt$png))){
+    nameitagain<-file.path(thename)
+    
+    lapply(nameitagain,function(x){file.remove(x)})
+  }
+  i<-i + 1
+  }
+
+}
+  
+}
+  
+  if(!is.null(opt$notabixfiles)){
+  
+  if(!is.null(opt$dir) && !is.null(opt$cordfile)){
+    
+    #########plotting without -t flag################
+    if(is.null(opt$plotTogether)){
+      
+      i<-1
+      list<-NULL
+      hold<-NULL
+      while(i <= length(chrom)){
+        
+        if(i >= 0){
+          
+          # Filter Based on Each Input
+          test2<-data %>% filter(data$Chr %in% chrom[[i]]$Chr)
+          test2<-test2 %>% filter(as.numeric(test2$start) <= as.numeric(chrom[[i]]$stop))
+          test2<-test2 %>% filter(as.numeric(test2$stop) >= as.numeric(chrom[[i]]$start))
+          
+          if(is.null(opt$lineColor)){
+            #Create String For Title With Gene Name
+            getnamegene<-toString(rownames(chrom[[i]]))
+            titlestring<-toString("Gene")
+            titlename<-paste(getnamegene,titlestring)
+            
+            #Rename File 
+            if(is.null(opt$png)){
+              endfilename<-toString("_CHR_Position_vs_Copy_Num.pdf")
+              nameoffile<-paste(getnamegene,endfilename, sep="") 
+            }
+            
+            if(!is.null(opt$png)){
+              endfilename<-toString("_CHR_Position_vs_Copy_Num.png")
+              nameoffile<-paste(getnamegene,endfilename, sep="") 
+            }
+            
+            xstring<-chrom[[i]]$Chr
+            str<-toString("Chromosome Position (")
+            str1<-paste(str,xstring)
+            str2<-toString(")")
+            xaxisname<-paste(str1,str2)
+            
+            col<-test2 %>% select("COLOR","FILENAME")
+            col<-unique(col)
+            
+            col1<-as.character(col$COLOR)
+            names(col1)<-as.character(col$FILENAME)
+            h<-toString(basename(opt$file))
+            a<-toString(rbind(str_trunc(h,20,"right")))
+            
+            
+            
+            if(is.null(opt$lineMult)){
+              colofline=toString("blue")
+            }
+            
+            if(!is.null(opt$lineMult)){
+              getcol<-toString(opt$lineMult)
+              colofline<-toString(getcol)  
+            }
+            if(!is.null(opt$rename)){
+              a<-toString(opt$rename)
+            }
+            if(is.null(opt$rename)){
+              a<-toString(rbind(str_trunc(h,20,"right")))
+            }
+            
+            
+            plot<-test2 %>% ggplot(aes(x=start, y=Ecopynum, group=FILENAME,color=COLOR)) +scale_color_manual(values=c("black",colofline), labels=c("Files From Directory",a), name='Data')+ geom_line() + ggtitle(bquote(paste(italic(.(getnamegene)),paste(" "),paste(.(titlestring))))) + xlab(xaxisname) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title=element_text(hjust=0.5),panel.grid.major=element_blank(),panel.grid.minor=element_blank(), axis.line=element_line(colour="black"))
+            plot<-plot + geom_hline(yintercept=2, color="light grey")
+            
+            
+            ###ANNOTATION TRACK###
+            
+            if((!is.null(opt$annotation) | !is.null(opt$non) ) | (!is.null(opt$non) & !is.null(opt$annotation))){
+              
+              exondf<-as.data.frame(fread(opt$annotation))
+              exonstartcol<-as.numeric(exonstartcol)
+              exonendcol<-as.numeric(exonendcol)
+              exonchrcol<-as.numeric(exonchrcol)
+              exoncolor<-toString(exoncolor)
+              exonalpha<-as.numeric(exonalpha)
+              exonborder<-tolower(toString(exonborder))
+              
+              names(exondf)[exonstartcol]<-"start"
+              names(exondf)[exonendcol]<-"end"
+              names(exondf)[exonchrcol]<-"Chr"
+              
+              exondf<-exondf %>% filter(exondf$Chr %in% chrom[[i]]$Chr)
+              exondf<-exondf %>% filter(as.numeric(exondf$start) <= as.numeric(chrom[[i]]$stop))
+              exondf<-exondf %>% filter(as.numeric(exondf$end) >= as.numeric(chrom[[i]]$start))
+              
+              if(1 <= length(exondf$start)){
+                j<-1
+                
+                while(j <= length(exondf$start)){
+                  
+                  for(j in 1:nrow(exondf)){
+                    
+                    strte<-exondf[j, "start"]
+                    stope<-exondf[j, "end"]
+                    
+                    if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+                      plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder) + scale_fill_discrete(labels=c(nameexon))+ scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon))
+                      plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)
+                      
+                    }
+                    
+                    else{
+                      plot<-plot + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder) 
+                      
+                    }
+                  }
+                  j<-j+1
+                } 
+              }
+            }
+            #########################
+            
+            ###########Box###########
+            if(!is.null(opt$box)){
+              if(nrow(test2)>=2){
+                a<-as.data.frame(sapply(split(test2$Ecopynum,test2$FILENAME),mean))
+                colnames(a)<-"means"
+                
+                
+                fun_mean <- function(x){
+                  return(data.frame(y=mean(x),label=mean(x,na.rm=T)))}
+                
+                p1<-a %>% ggplot(aes(x='',y=means)) + geom_boxplot() + stat_summary(fun= mean, geom="point",colour="black", size=1) + geom_point(aes(x='', y=a["Inital",1]), color="blue",pch=23)
+                
+                p1<- p1 + scale_color_manual(values=c("black",colofline),)+ geom_hline(yintercept=2, color="light grey")+ geom_hline(yintercept=2.7, color="light grey") + geom_hline(yintercept=1.3, color="light grey")  + scale_y_continuous(limits=c(0, 6), n.breaks=6,position="right")+ theme_bw() + theme(legend.position = "none",rect = element_rect(fill = "transparent"),panel.border = element_blank(),axis.line.y = element_line(colour = "dark grey"),plot.title=element_blank(),panel.grid.major=element_blank(),panel.grid.minor=element_blank(),axis.title.x=element_blank(),axis.title.y=element_blank(),axis.text.x=element_blank(), axis.ticks.x=element_blank())
+                plot<-plot+  inset_element(p1, left=0.6, bottom=0.6, right=1.05, top=0.999, align_to = "plot", on_top=TRUE, clip=FALSE) 
+              }
+            }
+            ##########Plot###########
+            
+            ggsave(plot=plot, width=7, height=6, dpi=300, filename=nameoffile)
+            
+            if(!is.null(opt$png) && !is.null(opt$multifile)){
+              list1<-c(nameoffile)
+              
+              pngFiles<-rbind(list, (list1))
+              merge.png.pdf (pdfFile = paste0(i,".pdf"), pngFiles = pngFiles, deletePngFiles = T)
+              
+              hold1<-c(paste0(i,".pdf"))
+              hold<- rbind(hold,hold1)
+              
+              if(!is.null(opt$multifile)){
+                filename<-toString(opt$multifile)
+                pdf_combine(hold,output=filename)
+              }
+              
+            }
+            if(is.null(opt$png) && !is.null(opt$multifile)){
+              
+              list1<-c(nameoffile)
+              list<-rbind(list, (list1))
+              
+              if(!is.null(opt$multifile)){
+                filename<-toString(opt$multifile)
+                pdf_combine(list, output=filename)
+              }
+            }
+          }
+          i<-i + 1
+          
+          if(!is.null(opt$lineColor)){
+            warning("-l FLAG MUST BE NOT BE USED")
+          }
+        }
+        
+      }
+      
+      if(!is.null(opt$multifile)){
+        lapply(list,function(x){file.remove(x)})
+      }
+      
+      if(!is.null(opt$png)){
+        lapply(hold,function(x){file.remove(x)})
+      } 
     }
   }
-  }
-  }
-
 }
 }
-
 #####################################
 end1 <- Sys.time()  
 time1 <- end1 - start1 
