@@ -660,7 +660,7 @@ if(is.null(opt$plotTogether) && is.null(opt$dir) ){
             }
           }
           
-          if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+          if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
             legend("topright", fill=exoncolor, legend=nameexon, bty="n", border=exonborder)
           }
         }
@@ -731,7 +731,7 @@ if(is.null(opt$plotTogether) && is.null(opt$dir) ){
             }
           }
           
-          if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+          if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
             legend("topright", fill=exoncolor, legend=nameexon, bty="n", border=exonborder)
           }
         }  
@@ -945,7 +945,7 @@ if(!is.null(opt$cordfile) && !is.null(opt$plotTogether) &&  is.null(opt$dir)){
             strte<-exondf[j, "start"]
             stope<-exondf[j, "end"]
             
-            if((exonledgend %like% "y" || exonledgend %like% "yes")| (as.numeric(length(annotate[[1]])) ==9)){
+            if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
               plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon))+ guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) +           xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw()
               plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder) 
               
@@ -1022,7 +1022,7 @@ if(!is.null(opt$cordfile) && !is.null(opt$plotTogether) &&  is.null(opt$dir)){
               strte<-exondf[j, "start"]
               stope<-exondf[j, "end"]
               
-              if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+              if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
                 plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) +           xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw()
                 plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder) 
               
@@ -1232,7 +1232,7 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
                   strte<-exondf[j, "start"]
                   stope<-exondf[j, "end"]
                   
-                  if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+                  if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
                     plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder) + scale_fill_discrete(labels=c(nameexon))+ scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon))
                     plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)
                   
@@ -1448,7 +1448,7 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
               strte<-exondf[j, "start"]
               stope<-exondf[j, "end"]
               
-              if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+              if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
                 plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon))+ guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) +           xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw()
                 plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder) 
                  
@@ -1535,7 +1535,7 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
                 strte<-exondf[j, "start"]
                 stope<-exondf[j, "end"]
                 
-                if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+                if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
                   plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) + xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw()
                   plot1<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)  
                   plot<-plot1 
@@ -1752,7 +1752,7 @@ if(!is.null(opt$dir) && !is.null(opt$cordfile)){
                       strte<-exondf[j, "start"]
                       stope<-exondf[j, "end"]
                       
-                      if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+                      if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
                         plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder) + scale_fill_discrete(labels=c(nameexon))+ scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon))
                         plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)
                         
@@ -2027,7 +2027,7 @@ if(!is.null(opt$plotTogether)){
             strte<-exondf[j, "start"]
             stope<-exondf[j, "end"]
             
-            if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+            if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
               plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon))+ guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) +           xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw()+ theme(plot.title = element_text(hjust = 0.5),panel.border = element_blank(), panel.grid.major = element_blank(),
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
               plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder) 
@@ -2154,7 +2154,7 @@ if(!is.null(opt$plotTogether)){
               strte<-exondf[j, "start"]
               stope<-exondf[j, "end"]
               
-              if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+              if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
                 plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder)  + scale_fill_discrete(labels=c(nameexon)) + scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon)) + theme(legend.justification=c(1, 1), legend.position=c(1, 1),  title=element_blank(),legend.key=element_rect(colour=NA, fill=NA)) + ggtitle(bquote(paste(paste("Genes: "),italic(.(tname))))) + xlab(bquote(paste(paste("Chromosome Position(s) ("),italic(.(chr1)),paste(")")))) + ylab("Estimated Copy Number") + scale_x_continuous(n.breaks=6) + scale_y_continuous(limits=c(0, 6), n.breaks=6)  + theme_bw() + theme(plot.title = element_text(hjust = 0.5),panel.border = element_blank(), panel.grid.major = element_blank(),
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
                 plot1<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)
@@ -2343,7 +2343,7 @@ if(!is.null(opt$plotTogether)){
                     strte<-exondf[j, "start"]
                     stope<-exondf[j, "end"]
                     
-                    if((exonledgend %like% "y" || exonledgend %like% "yes") | (as.numeric(length(annotate[[1]])) ==9)){
+                    if((exonledgend %like% "y" || exonledgend %like% "yes") || (as.numeric(length(annotate[[1]])) ==9)){
                       plot1<-plot  + geom_rect(aes(xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor), alpha=exonalpha, color=exonborder) + scale_fill_discrete(labels=c(nameexon))+ scale_fill_manual(values=exoncolor, labels=c(nameexon)) + guides(fill=guide_legend(title=nameexon))
                       plot<-plot1 + annotate("rect", xmin=as.numeric(strte), xmax=as.numeric(stope), ymin=0, ymax=0.2, fill=exoncolor, alpha=exonalpha, color=exonborder)
                       
