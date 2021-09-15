@@ -97,6 +97,10 @@ func<-function(t){
         }
     initialmean<-mean(fr$V4)
     par(mar=c(5.1, 4.1, 4.1, 6.1))
+    bgcolor<-function(){
+      par(fig=c(0.5,1,0.6,1),new=TRUE)
+      rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = "white", border="transparent")
+      }
     if(is.null(opt$plotTogether)){
       xaxisname<-paste(chr, "position")
       plot(as.numeric(fr$V2), y=as.numeric(fr$V4), col=("transparent"), xlab=xaxisname ,
@@ -188,13 +192,14 @@ func<-function(t){
                   printlines<-printline()
               }
               if(!is.null(opt$box)){
+                colobgit<-bgcolor()
                 if(!is.null(opt$plotTogether)){
                   par(mar=c(5.1, 4.1, 4.1, 6.1))
                   par(fig=c(0.47,0.9,0.6,1), new=TRUE)
-                  
                   boxplot(getmeans, col="white",ylim=c(0,6),axes=FALSE,xpd = TRUE)
                   points(initialmean, col=colofline, pch=23)
                   par(fig=c(0.5,1,0.6,1), new=TRUE)
+                  par(bg = "blue")
                   axis(side = 4,las=1,cex.axis=0.5)
                   abline(h=2, col="grey", lty=1)
                   abline(h=2.7, col="grey", lty=2)
@@ -222,6 +227,7 @@ func<-function(t){
                 abline(h=2.7, col="grey", lty=2)
                 abline(h=1.3, col="grey", lty=2)
                 par(old.par) }
+                
               }
             }
         }
@@ -258,18 +264,19 @@ func<-function(t){
         })
       if(!is.null(opt$box)){
           if(is.null(opt$plotTogether)){
-          x<-do.call(rbind,x) 
-          }
-          par(fig=c(0.5,1,0.6,1), new=TRUE)
+          x<-do.call(rbind,x) }
+          colobgit<-bgcolor()
+          par(fig=c(0.5,1,0.6,1),new=TRUE)
           boxplot(x, col="white",ylim=c(0,6),axes=FALSE,xpd = TRUE)
           axis(side = 4,las=1,cex.axis=0.5)
           points(initialmean, col=colofline, pch=23)
-        if(is.null(opt$singleplots) && !is.null(opt$plotTogether)){
-          lapply(secondmean,function(m){
-          points(3,m, col=getcol, pch=23)}) }
           abline(h=2, col="grey", lty=1)
           abline(h=2.7, col="grey", lty=2)
           abline(h=1.3, col="grey", lty=2)
+        if(is.null(opt$singleplots) && !is.null(opt$plotTogether)){
+          lapply(secondmean,function(m){
+          points(3,m, col=getcol, pch=23)}) 
+          }
           par(old.par) }
         }
       }
