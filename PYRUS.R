@@ -14,15 +14,21 @@ option_list<-list(make_option(c("-f", "--file"), default=NULL, type="character",
                   make_option(c("-b", "--box"), default=NULL, type="character",help='Plot Box-plot Window'),
                   make_option(c("-s", "--singleplots"), default=NULL, type="character",help='plots each file in dirpath individually'),
                   make_option(c("-y", "--rename"), default=NULL, type="character",help='Rename file -f on plot'),
+                  make_option(c("-g", "--regions"), default="1.3,2.7", type="character",help='Plot only regions above 2.7 CNV or below 1.3 CNV'),
+                  make_option(c("-v", "--minmax"), default=NULL, type="character",help='print between regions'),
+                  make_option(c("-u", "--topylim"), default=6, type="integer",help='change top -y lim value, defualt is 6'),
+                  make_option(c("-x", "--sex"), default=F, type="character",help='M or F sample, if male sample, -g flag max and mins will be subtracted by 1'),
                   make_option(c("-n", "--annInput"), default=NULL, type="character",help='Input For Annotation (fill,boarder,name), ex : "red,blue,Exons'),
                   make_option(c("-o", "--outfile"), default=NULL, type="character",help='Outputs The Chromosome Plots Into One PDF, Defualt Is Plots Each Cordinate To Its Own PDF File'))
 opt<-parse_args(OptionParser(option_list=option_list))
 options(scipen = 999)
 outfile=opt$outfile
+
 colorofann<-"red"
 bordcolofann<-"black"
 nameofann<-"Exons"
-
+max<-(as.numeric(strsplit(toString(opt$regions), ',', fixed=TRUE)[[1]][2]))
+min<-(as.numeric(strsplit(toString(opt$regions), ',', fixed=TRUE)[[1]][1]))
 annlen<-(-0.12)
 colofline<-strsplit(toString(opt$lineColor), ',', fixed=TRUE)[[1]][1]
 getcol<-strsplit(toString(opt$lineColor), ',', fixed=TRUE)[[1]][2]
@@ -64,8 +70,8 @@ if(!is.null(opt$annInput)){
   colorofann<-annsplit[[1]][1]
   bordcolofann<-annsplit[[1]][2]
   nameofann<-toString(rbind(strtrim(annsplit[[1]][3],15)))
-  annlen<-(-0.2)
-}
+  annlen<-(-0.2)}
+
 if(!is.null(opt$dir)){
   pattern<-toString(opt$dirpattern)
   pattern1<-paste0(pattern,"$")
@@ -75,14 +81,16 @@ if(!is.null(opt$dir)){
 }
 
 func<-function(t){
-  lapply(COORD_INPUT[[1]], function(x){
+  holding<-lapply(COORD_INPUT[[1]], function(x){
     par(mar=c(5.1, 4.1, 4.1, 6.1))
     rangeofit<-toString(strsplit(x, ',', fixed=TRUE)[[1]][2])
     chr<-strsplit(rangeofit, ':', fixed=TRUE)[[1]][1]
+    stsp<-strsplit(rangeofit, ':', fixed=TRUE)[[1]][2]
     nameofit<-strsplit(x, ',', fixed=TRUE)[[1]][1]
     initialfile<-file.path(opt$file)
+    startcord<-strsplit(stsp, '-', fixed=TRUE)[[1]][1]
+    stopcord<-strsplit(stsp, '-', fixed=TRUE)[[1]][2]
     fr<-tabix.read.table(initialfile,rangeofit,col.names = TRUE,stringsAsFactors = FALSE)
-    wait<-1
     if(length(fr)>=1){
       par(old.par)
       if(is.null(opt$outfile)){
@@ -96,6 +104,16 @@ func<-function(t){
             pdf(paste0(nameofit,"-",basename(t),".pdf")) }
         }
     initialmean<-mean(fr$V4)
+    if(opt$sex == "M" && chr == "chrY"){
+      min<-(min-1)
+      max<-(max-1)}
+    if(opt$sex == "M" && chr == "chrX"){
+      max<-(max-1)
+      min<-(min-1)}
+    if(opt$sex == "F" && chr == "chrY"){
+    min<-(min-1)
+    max<-(max-1)}
+    if(is.null(opt$minmax) || (!is.null(opt$minmax) && (as.numeric(initialmean)<=min || as.numeric(initialmean)>=max))){
     par(mar=c(5.1, 4.1, 4.1, 6.1))
     bgcolor<-function(){
       par(fig=c(0.5,1,0.6,1),new=TRUE)
@@ -104,8 +122,8 @@ func<-function(t){
     if(is.null(opt$plotTogether)){
       xaxisname<-paste(chr, "position")
       plot(as.numeric(fr$V2), y=as.numeric(fr$V4), col=("transparent"), xlab=xaxisname ,
-           ylab="Estimated Copy Number", main=(bquote(paste(italic(.(nameofit))))), pch=19,
-           ylim= c(0,6), type= 'l' , cex.main=1, cex.lab=1, cex.axis=1,las=1)
+           ylab="Estimated Copy Number", main=(bquote(paste(italic(.(nameofit))))), pch=23,
+           ylim= c(0,opt$topylim), type= 'l' , cex.main=1, cex.lab=1, cex.axis=1,las=1)
       abline(h=2, col="grey", lty=2)
 
       legend("topright", inset=c(-0.2,0.5), legend=filename,pch=23,col=colofline,lty=1,xpd = TRUE,horiz = TRUE,bty = "n",cex=0.5)
@@ -133,7 +151,7 @@ func<-function(t){
             
              plot(as.numeric(plotlinetogether$V2), y=as.numeric(plotlinetogether$V4),  xlab=xaxisname,col="transparent",
                  ylab="Estimated Copy Number", main=(bquote(paste(italic(.(nameofit)),paste(" and "),italic(.(plottogethernameofit))))), pch=19,
-                 ylim= c(0,6), type= 'l' , cex.main=1, cex.lab=1, cex.axis=1,las=1)
+                 ylim= c(0,opt$topylim), type= 'l' , cex.main=1, cex.lab=1, cex.axis=1,las=1)
             legend("topright", inset=c(-0.2,0.5), legend=strtrim(nameofit,15),col=colofline,lty=1,xpd = TRUE,horiz = TRUE,bty = "n",cex=0.5) 
             legend("topright", inset=c(-0.2,0.45), legend=strtrim(plottogethernameofit,15),col=toString(getcol),lty=1,xpd = TRUE,horiz = TRUE,bty = "n",cex=0.5)
            return(secmean) }
@@ -196,7 +214,7 @@ func<-function(t){
                 if(!is.null(opt$plotTogether)){
                   par(mar=c(5.1, 4.1, 4.1, 6.1))
                   par(fig=c(0.47,0.9,0.6,1), new=TRUE)
-                  boxplot(getmeans, col="white",ylim=c(0,6),axes=FALSE,xpd = TRUE)
+                  boxplot(getmeans, col="white",ylim=c(0,opt$topylim),axes=FALSE,xpd = TRUE)
                   points(initialmean, col=colofline, pch=23)
                   par(fig=c(0.5,1,0.6,1), new=TRUE)
                   par(bg = "blue")
@@ -206,7 +224,7 @@ func<-function(t){
                   abline(h=1.3, col="grey", lty=2)
                   
                   par(fig=c(0.57,1,0.6,1), new=TRUE)
-                  boxplot(meansget, col="white",ylim=c(0,6),axes=FALSE,xpd = TRUE)
+                  boxplot(meansget, col="white",ylim=c(0,opt$topylim),axes=FALSE,xpd = TRUE)
                 
                 if(!is.null(opt$plotTogether)){
                   par(mar=c(5.1, 4.1, 4.1, 6.1))
@@ -220,7 +238,7 @@ func<-function(t){
               
               if(is.null(opt$plotTogether)){
                 par(fig=c(0.5,1,0.6,1), new=TRUE)
-                boxplot(getmeans, col="white",ylim=c(0,6),axes=FALSE,xpd = TRUE)
+                boxplot(getmeans, col="white",ylim=c(0,opt$topylim),axes=FALSE,xpd = TRUE)
                 axis(side = 4,las=1,cex.axis=0.5)
                 points(initialmean, col=colofline, pch=23)
                 abline(h=2, col="grey", lty=1)
@@ -267,7 +285,7 @@ func<-function(t){
           x<-do.call(rbind,x) }
           colobgit<-bgcolor()
           par(fig=c(0.5,1,0.6,1),new=TRUE)
-          boxplot(x, col="white",ylim=c(0,6),axes=FALSE,xpd = TRUE)
+          boxplot(x, col="white",ylim=c(0,opt$topylim),axes=FALSE,xpd = TRUE)
           axis(side = 4,las=1,cex.axis=0.5)
           points(initialmean, col=colofline, pch=23)
           abline(h=2, col="grey", lty=1)
@@ -279,10 +297,21 @@ func<-function(t){
           }
           par(old.par) }
         }
-      }
+    }
+    else{fir<-NULL}
+    }
+    if((as.numeric(initialmean)<=min || as.numeric(initialmean)>=max) ){
+      holdthething<-paste0(chr,"\t",startcord,"\t",stopcord,"\t",nameofit,"\t",initialmean)
+      return(holdthething)}
     }
   else{fir<-NULL}
-  })
+    })
+  
+  if(is.null(opt$plotTogether)){
+  filenameisthis<-paste0(toString(basename(opt$file)),".txt")
+  header<-paste0("chrom","\t","start","\t","stop","\t","name","\t","WTC_mean")
+  a.list<-append(header,holding[!sapply(holding, is.null)])
+  lapply(a.list, write, filenameisthis, append=TRUE, ncolumns=5)}
 }
   if(!is.null(opt$singleplots)){ 
   lapply(directory,func) }
