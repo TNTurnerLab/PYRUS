@@ -3,23 +3,23 @@ library(optparse)
 library(dplyr)
 library(seqminer)
 
-option_list<-list(make_option(c("-f", "--file"), default=NULL, type="character",help='Input an Inital Bed File'),
-                  make_option(c("-d", "--dir"), default=NULL, type="character",help='Input Directory of Bed Files'), 
-                  make_option(c("-p", "--dirpattern"), default=".bed.gz", type="character",help='Pattern of files in Directory, defualt .bed'),
-                  make_option(c("-a", "--annotation"), default=NULL, type="character",help='Add an Annotation File '),
-                  make_option(c("-c", "--cordfile"), default=NULL, type="character",help='Input a Chr Coordinates Bed File'), 
-                  make_option(c("-l", "--lineColor"), default="blue,red", type="character",help='Input a Color(s) ex: blue,red'),
-                  make_option(c("-t", "--plotTogether"), default=NULL, type="character",help='Graph Together. ex: BARX1,BARX1-DT'),
-                  make_option(c("-r", "--HighRes"), default=NULL, type="character",help='Save Plot(s) as PNG Image, Defualt is off'),
-                  make_option(c("-b", "--box"), default=NULL, type="character",help='Plot Box-plot Window'),
-                  make_option(c("-s", "--singleplots"), default=NULL, type="character",help='plots each file in dirpath individually'),
+option_list<-list(make_option(c("-f", "--file"), default=NULL, type="character",help='Input an initial bed file'),
+                  make_option(c("-d", "--dir"), default=NULL, type="character",help='Input directory of bed files'), 
+                  make_option(c("-p", "--dirpattern"), default=".bed.gz", type="character",help='Pattern of files in directory, default .bed'),
+                  make_option(c("-a", "--annotation"), default=NULL, type="character",help='Add an annotation file '),
+                  make_option(c("-c", "--cordfile"), default=NULL, type="character",help='Input a chr coordinates bed file'), 
+                  make_option(c("-l", "--lineColor"), default="blue,red", type="character",help='Input color(s) of line(s). ex: blue,red'),
+                  make_option(c("-t", "--plotTogether"), default=NULL, type="character",help='Graph together. ex: BARX1,BARX1-DT'),
+                  make_option(c("-r", "--HighRes"), default=NULL, type="character",help='Save plot(s) as PNG image, Default is off'),
+                  make_option(c("-b", "--box"), default=NULL, type="character",help='Plot box-plot window'),
+                  make_option(c("-s", "--singleplots"), default=NULL, type="character",help='Plots each file in dir individually'),
                   make_option(c("-y", "--rename"), default=NULL, type="character",help='Rename file -f on plot'),
-                  make_option(c("-g", "--regions"), default="1.3,2.7", type="character",help='Plot only regions above 2.7 CNV or below 1.3 CNV'),
-                  make_option(c("-v", "--minmax"), default=NULL, type="character",help='print between regions'),
-                  make_option(c("-u", "--topylim"), default=6, type="integer",help='change top -y lim value, defualt is 6'),
-                  make_option(c("-x", "--sex"), default=F, type="character",help='M or F sample, if male sample, -g flag max and mins will be subtracted by 1'),
-                  make_option(c("-n", "--annInput"), default=NULL, type="character",help='Input For Annotation (fill,boarder,name), ex : "red,blue,Exons'),
-                  make_option(c("-o", "--outfile"), default=NULL, type="character",help='Outputs The Chromosome Plots Into One PDF, Defualt Is Plots Each Cordinate To Its Own PDF File'))
+                  make_option(c("-g", "--regions"), default="1.3,2.7", type="character",help='Print only regions below 1.3 CNV or above 2.7 CNV , these values can be modified'),
+                  make_option(c("-v", "--regionsPlotting"), default=NULL, type="character",help='Flag to initialize the plotting of only the regions whose means are outside of values given in the -g flag'),
+                  make_option(c("-u", "--topylim"), default=6, type="integer",help='To change the max height limit of the plot window, default is 6'),
+                  make_option(c("-x", "--sex"), default=F, type="character",help='M or F sample, if male sample, -g flag the values will decrease by 1'),
+                  make_option(c("-n", "--annInput"), default=NULL, type="character",help='Input for annotation (fill,boarder,name), ex : "red,blue,Exons'),
+                  make_option(c("-o", "--outfile"), default=NULL, type="character",help='Creates a single output file for plots, default is each coordinate prints to its own PDF file'))
 opt<-parse_args(OptionParser(option_list=option_list))
 options(scipen = 999)
 outfile=opt$outfile
@@ -113,7 +113,7 @@ func<-function(t){
     if(opt$sex == "F" && chr == "chrY"){
     min<-(min-1)
     max<-(max-1)}
-    if(is.null(opt$minmax) || (!is.null(opt$minmax) && (as.numeric(initialmean)<=min || as.numeric(initialmean)>=max))){
+    if(is.null(opt$regionsPlotting) || (!is.null(opt$regionsPlotting) && (as.numeric(initialmean)<=min || as.numeric(initialmean)>=max))){
     par(mar=c(5.1, 4.1, 4.1, 6.1))
     bgcolor<-function(){
       par(fig=c(0.5,1,0.6,1),new=TRUE)
