@@ -24,7 +24,7 @@ To run on LSF with Docker:
 	
 	bsub -G name -q name -R 'rusage[mem=20GB]' -a 'docker(tnturnerlab/pyrus)' LC_ALL=C.UTF-8  Rscript /path/to/cloned/Repo/PYRUS/PYRUS.R /path/to/input/file/My_Bed_File.bed.gz -c /path/to/input/file/My_Chr_file.bed.gz {INSERT ANY MORE FLAGS IF NECESSARY}
 
-### Runing on local command line with R:
+### Running on local command line with R:
 
 	Rscript /path/to/cloned/Repo/PYRUS.R -f /path/to/input/file/My_Bed_File.bed.gz -c /path/to/input/file/My_Chr_file.bed.gz {INSERT ANY MORE FLAGS IF NECESSARY}
  
@@ -67,7 +67,7 @@ Input a chromosome coordinates bed file.
 
 -o	:
   
- Allows user to name, and place all outputputted plots into one PDF, default is plots each coordinate to its own PDF file
+ Allows user to name, and place all output plots into one PDF, default is plots each coordinate to its own PDF file
   
    * default=NULL	
    * ex: -o multiplePagePDFFileofMyPlots.pdf
@@ -115,13 +115,13 @@ Input the directory pathway to bed files, if multiple bed files are wanted to be
 	-p: 
 
   		Input an ending pattern for files found inside the directory in "-d" flag. Must be the 
-		endding pattern of the file. Can also be used to specify a specific file from a directory.
+		ending pattern of the file. Can also be used to specify a specific file from a directory.
     
     			default=.bed.gz	Ex: -d /path/to/dir/ -p .t1.cn.bed.gz	Ex: -d /path/to/dir/ -p exact.t1.cn.bed.gz 
 
 -a	: 
 
-Flag used if user would like to add an annotation track using a bedfile. The default color settings or the annotation track is a red fill, black boarder, and Exon as the name,
+Flag used if user would like to add an annotation track using a bedfile. The default color settings or the annotation track is a red fill, black border, and Exon as the name,
 
 * default=NULL	
 * ex: -a exonbedfile.bed
@@ -135,7 +135,7 @@ Flag used if user would like to add an annotation track using a bedfile. The def
     
 -b:
 
-This flag will create a box-plot window in the top right corner of the existing line plot. The box plot will display the individual, marked with the -f flag, with a blue dot. This will automattically turn on if there are more than 10 files when multiplotting.
+This flag will create a box-plot window in the top right corner of the existing line plot. The box plot will display the individual, marked with the -f flag, with a blue dot. This will automatically turn on if there are more than 10 files when multiplotting.
 
 * default=NULL	
 * Ex: -b y 
@@ -164,7 +164,7 @@ If sex is known of the file called in the -f flag. Default is F. This flag only 
 
 -v: 
 
- Plot only those whose threshold values are below the 1st value of -g flag, or above the second of the -g flag.Note that X and Y chromosomes will be 1 less than the values given if the sex is known. 
+ Plot only those whose threshold values are below the 1st value of -g flag, or above the second of the -g flag. Note that X and Y chromosomes will be 1 less than the values given if the sex is known. 
     
  * default=NULL	
  * Ex: -v y
