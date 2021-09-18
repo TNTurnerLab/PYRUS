@@ -2,8 +2,7 @@
 
 <h1>PYRUS</h1>
 
-PYRUS is a plotting tool that uses tabix files to create line graphs from bed file data. Utilization of PYRUS includes having a quick plotter for copy number variation within a given chromosomal range of a referenced bed file. 
-
+PYRUS is a tool for plotting copy number estimate data, from an individual, for user-specified regions of the genome. It has several options including plotting other individuals in the same region, plotting an annotation track, and writing out specific regions where the individuals have a copy number below or above given values. The input to the tool are bgzipped and tabix indexed bed files, which enables rapid plotting of the data.
 
 ## Running Pyrus
 
@@ -29,9 +28,9 @@ To run on LSF with Docker:
 	Rscript /path/to/cloned/Repo/PYRUS.R -f /path/to/input/file/My_Bed_File.bed.gz -c /path/to/input/file/My_Chr_file.bed.gz {INSERT ANY MORE FLAGS IF NECESSARY}
  
  ## Requirements
-Users have the option to run PYRUS with the given Docker image, or via a command line if there is a configured R application.
+Users have the option to run PYRUS using Docker, or via the command line using Rscript.
  
-#### R studio must contain the following packages:
+#### The following R packages are required to run PYRUS:
 
 * optparse
 * dplyr
@@ -39,35 +38,36 @@ Users have the option to run PYRUS with the given Docker image, or via a command
 
 #### File Requirements
 
-* Bed files are the only acceptable file types for this script
+* bgzipped and tabix-indexed bed files are the only acceptable file types for this script. For more information about how to prepare these files see [bgzip](http://www.htslib.org/doc/bgzip.html) and [tabix](http://www.htslib.org/doc/tabix.html)
 
+An example of the input bed file prior to bgzipping and tabix indexins is shown below:
 
-
-
-
-
+```
+chr1	0	54484	1.394791
+chr1	54484	60739	1.258411
+chr1	60739	68902	1.155175
+chr1	68902	82642	2.633766
+```
 
 ## Required Flags :
 
 -f	:
 
-Input the initial/main bed file
+Input the initial/main bgzipped and tabix indexed copy number estimate bed file for the individual
   
-    	default=NULL	Ex: -f BedFile.bed.gz
+    	default=NULL	Ex: -f bedFile.bed.gz
 
 -c	:
 
-Input a chromosome coordinates bed file.
+Input a bgzipped and tabix indexed chromosome coordinate file containing the regions for plotting with PYRUS.
     
     	default=NULL	Ex: myChrbedfile.bed.gz
-
-
 
 ## Optional Flags:
 
 -o	:
   
- Allows user to name, and place all output plots into one PDF, default is plots each coordinate to its own PDF file
+ Enables the user to combine all plots into one PDF with user-specified name, the default setting is to plot each coordinate to its own PDF file
   
    * default=NULL	
    * ex: -o multiplePagePDFFileofMyPlots.pdf
@@ -81,28 +81,28 @@ Flag to change the outputs from a pdf file to a low resolution png file.
     
 -l	:
 
-  Input a color for the line(s) created from the file given to the -f flag. 
+Input a color for the line(s) created from the file given to the -f flag. 
     
    * default=blue,red	
    * Ex: -l blue,red
 
 -y	: 
 
-To change the legend name of the file -f when plotting. The default name will always be the first 15 characters of the file's name.
+To change the sample name in the legend for the file specified with the `-f` argument. The default name will always be the first 15 characters of the filename.
     
   * default=NULL	
   * Ex: -y MyNewName
 
-
 -u:
 
-Change the ylim max values plot window. 
+Change the ylim maximum value for the plot window. The default is a copy number of 6. 
     
    * default=6	
    * Ex: -u 7
     
 -d	: 
-Input the directory pathway to bed files, if multiple bed files are wanted to be plotted onto one plot. The program will automatically search for .tbi files and require them to run. 
+
+Input the directory path to bgzipped and tabix indexed bed files from additional samples. This option is used when the user wants to plot multiple samples. Note: the program will automatically search for .tbi files and requires them to run. 
     
    * default=NULL	
    * Ex: -d /path/to/a/directory/with/bed/file
@@ -121,7 +121,7 @@ Input the directory pathway to bed files, if multiple bed files are wanted to be
 
 -a	: 
 
-Flag used if user would like to add an annotation track using a bedfile. The default color settings or the annotation track is a red fill, black border, and Exon as the name,
+Flag used if user would like to add an annotation track (e.g., exons) using a bgzipped and tabix indexed bed file. The default color settings for the annotation track included a red fill, black border, and Exon as the name,
 
 * default=NULL	
 * ex: -a exonbedfile.bed
@@ -130,7 +130,6 @@ Flag used if user would like to add an annotation track using a bedfile. The def
 
   		Flag must be used along with "-a" to change the fill,boarder, and name of annotation track. 
   
-    
     			default=NULL	Ex: -a exonbedfile.bed.gz -n "color,color,name"
     
 -b:
@@ -142,32 +141,28 @@ This flag will create a box-plot window in the top right corner of the existing 
 
 -t:
 
-This flag takes two chromosomes, found in the chromosome bed file, and plots them side by side on a single plot. Data from the fourth column of the chromosome bed file must be used, typically it is a name/identifier. Default color of these lines are blue and red, but can be modified with the -l flag.
+This flag takes two names, found in the chromosome coordinate file, and plots them side by side on a single plot. The two names must be from regions on the same chromosome. Data from the fourth column of the chromosome bed file must be used, typically it is a name/identifier. The default colors of these lines are blue and red, but can be modified with the -l flag.
     
 * default=NULL	
 * Ex: -t BARX1,BARX1-DT
 
 -g: 
 
-Threshold values for printing out names that are with below the 1st value, or above the second. Note that X and Y chromosomes will be 1 less than the values given if the sex is known. 
+Threshold values for printing out names that are below the first value or above the second value. Note that if the user specificies the individual is male (-x M), the threshold for the X and Y chromosomes will be 1 less than the values indicated with this option. 
 
 * default="1.3,2.7"	
 * Ex: -g 2,3
-
 	
 -x: 
 
-If sex is known of the file called in the -f flag. Default is F. This flag only has to be called if user wants to change sex to M.
+If the sex is known for the individual in the file specified with the -f flag enter the value with this option. Default is F. This flag only has to be called if user wants to change sex to M.
     
 * default=F	
 * Ex: -x M
 
 -v: 
 
- Plot only those whose threshold values are below the 1st value of -g flag, or above the second of the -g flag. Note that X and Y chromosomes will be 1 less than the values given if the sex is known. 
+Plot only the regions whose threshold values are below the first value of -g flag, or above the second of the -g flag. Note that the X and Y chromosomes will have a threshold one less than the values given if the sex is male. 
     
  * default=NULL	
  * Ex: -v y
-
-  	
-  
