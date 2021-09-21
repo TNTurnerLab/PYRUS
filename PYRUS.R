@@ -17,7 +17,6 @@ option_list<-list(make_option(c("-f", "--file"), default=NULL, type="character",
                   make_option(c("-y", "--rename"), default=NULL, type="character",help='Rename file -f on plot'),
                   make_option(c("-g", "--regions"), default="1.3,2.7", type="character",help='Plot only regions above 2.7 CNV or below 1.3 CNV'),
                   make_option(c("-v", "--minmax"), default=NULL, type="character",help='print between regions'),
-                  make_option(c("-k", "--subtractbynum"), default=1, type="character",help='Subtract values given in -g flag by input for only chrY and chrX if karyotype is M, Default is 1 '),
                   make_option(c("-u", "--topylim"), default=6, type="integer",help='change top -y lim value, defualt is 6'),
                   make_option(c("-x", "--sex"), default=F, type="character",help='M or F sample, if male sample, -g flag max and mins will be subtracted by 1'),
                   make_option(c("-n", "--annInput"), default=NULL, type="character",help='Input For Annotation (fill,boarder,name), ex : "red,blue,Exons'),
@@ -118,11 +117,11 @@ func<-function(t){
         }
     initialmean<-mean(fr$V4)
     if(chr == "chrY"){
-      min<-(min-opt$subtractbynum)
-      max<-(max-opt$subtractbynum)}
+      min<-(min-1)
+      max<-(max-1)}
     if(opt$sex == "M" && chr == "chrX"){
-      max<-(max-opt$subtractbynum)
-      min<-(min-opt$subtractbynum)}
+      max<-(max-1)
+      min<-(min-1)}
     if(is.null(opt$minmax) || (!is.null(opt$minmax) && (as.numeric(initialmean)<=min || as.numeric(initialmean)>=max))){
     par(mar=c(5.1, 4.1, 4.1, 6.1))
     bgcolor<-function(){
@@ -164,8 +163,6 @@ func<-function(t){
                  ylim= c(0,opt$topylim), type= 'l' , cex.main=1, cex.lab=1, cex.axis=1,las=1)
             legend("topright", inset=c(-0.2,0.5), legend=strtrim(nameofit,15),col=colofline,lty=1,xpd = TRUE,horiz = TRUE,bty = "n",cex=0.5) 
             legend("topright", inset=c(-0.2,0.45), legend=strtrim(plottogethernameofit,15),col=toString(getcol),lty=1,xpd = TRUE,horiz = TRUE,bty = "n",cex=0.5)
-            lines(as.numeric(plotlinetogether1$V2), y=as.numeric(plotlinetogether1$V4), type="l", col=getcol)
-            lines(as.numeric(fr$V2), y=as.numeric(fr$V4), type="l", col=colofline)
            return(secmean) }
           else{ plotlinetogether<-NULL }
         })
@@ -318,6 +315,7 @@ func<-function(t){
     }
   else{fir<-NULL}
     })
+  
   if(is.null(opt$plotTogether)){
   filenameisthis<-paste0(chromCount, chrX, chrY,"_",toString(basename(opt$file)),"_chromosomal_positions_outside_of_",min,"_and_",max,".txt")
   header<-paste0("chrom","\t","start","\t","stop","\t","name","\t","WTC_mean")
