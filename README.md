@@ -1,173 +1,181 @@
-# Quick2Plot
+<img align="right" src="https://user-images.githubusercontent.com/77067493/129043760-26d57868-5f15-46bb-a00e-e82f8c50fa9c.png" height="20%" width="20%" >
 
-This script offered a quick, and customization way to create Line Graphs based on data produced by Quick-mer2.
 
-## Requirements
+Maintainer: Elvisa Mehinovic
 
-### R studio with the following packages:
+Laboratory of Dr. Tychele N. Turner, Ph.D.
 
+Washington University in St. Louis
 
-curl
-V8
-Rccp
-Rtsne
-scales
-qpdf
-optparse
-base
-data.table
-ggplot2
-dplyr
-tibble
-stringr
-stringi
-randomcoloR
-pdftools
-R.utils
+<h1>PYRUS</h1>
+PYRUS is a tool for plotting copy number estimate data, from an individual, for user-specified regions of the genome. It has several options including plotting other individuals in the same region, plotting an annotation track, and writing out specific regions where the individuals have a copy number below or above given values. The input to the tool are bgzipped and tabix indexed bed files, which enables rapid plotting of the data.
 
-Quick-mer2 Bed file
+### ADD IMAGE HERE ###
 
-Chromosome file
+### Get Started
+Clone the PYRUS repository:
 
-### Flag Options:
+	git clone git@github.com:TNTurnerLab/PYRUS.git
 
-"-f": REQUIRED
+ ## Running Pyrus Local Requirements
+Users have the option to run PYRUS using Docker, or via the command line using Rscript.
+ 
+#### The following R packages are required to run PYRUS:
 
-  Input the initial/main Quick-mer2 bed file
+* optparse
+* dplyr
+* seqminer
+* data.table
 
-    default=NULL
+Running on local command line with R:
 
-      ex: -f Quick-mer2BedFile.bed
+	Rscript /path/to/cloned/Repo/PYRUS.R -f /path/to/input/file/My_Bed_File.bed.gz -c /path/to/input/file/My_Chr_file.bed.gz {INSERT ANY MORE FLAGS IF NECESSARY}
+	
+## Running Pyrus with Docker:
 
+Pull the following Docker image:
 
-"-d":
+	docker pull tnturnerlab/pyrus
+	
+Run Docker image :
 
-  Input the directory pathway to bed files, if multiple bed files are wanted to be plotted onto one plot.
+	docker run -v /path/to/working/directory:/path/to/working/directory/ -w /path/to/cloned/Repo/ -it tnturnerlab/pyrus Rscript /path/to/cloned/Repo/PYRUS/PYRUS.R -f /path/to/input/file/My_Bed_File.bed.gz -c /path/to/input/file/My_Chr_file.bed.gz {INSERT ANY MORE FLAGS IF NECESSARY}
 
-    default=NULL
+To run on LSF with Docker:
+	
+	bsub -G name -q name -R 'rusage[mem=20GB]' -a 'docker(tnturnerlab/pyrus)' LC_ALL=C.UTF-8  Rscript /path/to/cloned/Repo/PYRUS/PYRUS.R /path/to/input/file/My_Bed_File.bed.gz -c /path/to/input/file/My_Chr_file.bed.gz {INSERT ANY MORE FLAGS IF NECESSARY}
 
-      ex: -d /path/to/a/directory/with/bed/files
-"-p":
 
-  Input a ending pattern for files found inside the directory in "-d" flag. Must be the endding pattern of the file.
 
-    default=.bed
+#### File Requirements
 
-      ex: -p .t1.cn.bed.gz  
-"-i":
+* bgzipped and tabix-indexed bed files are the only acceptable file types for this script. For more information about how to prepare these files see [bgzip](http://www.htslib.org/doc/bgzip.html) and [tabix](http://www.htslib.org/doc/tabix.html)
 
-  Input a Color for initial line when using -d line, default color is blue.
+An example of the input bed file prior to bgzipping and tabix indexins is shown below:
 
-    default=NULL
+```
+chr1	0	54484	1.394791
+chr1	54484	60739	1.258411
+chr1	60739	68902	1.155175
+chr1	68902	82642	2.633766
+```
 
-      ex: -i green
+## Required Flags :
 
-"-a":
+-f	:
 
-  Flag used if user would like to add an annotation track using a bedfile. This option will is interactive and will require answers to the following questions:
+Input the initial/main bgzipped and tabix indexed copy number estimate bed file for the individual
+  
+   * default=NULL	
+   * Ex: -f bedFile.bed.gz
 
-      If input file a bed file (y/n):
-      What column number is your chr in (value):
-      What column is your start position in (value):
-      What column is your end position in (value):
-      Alpha (value):
-      Color (char):
-      Outline Color (char):
-      Include a legend (y/n):
-      Name Of Legend:
+-c	:
 
-    default=NULL
+Input a bgzipped and tabix indexed chromosome coordinate file containing the regions for plotting with PYRUS.
+    
+   * default=NULL	
+   * Ex: myChrbedfile.bed.gz
 
-      ex: -a exonbedfile.bed
+## Optional Flags:
 
-"-c": REQUIRED
+-o	:
+  
+ Enables the user to combine all plots into one PDF with user-specified name, the default setting is to plot each coordinate to its own PDF file
+  
+   * default=NULL	
+   * ex: -o multiplePagePDFFileofMyPlots.pdf
 
-  Input a Chromosome Coordinates Bed File
+-r	:
 
-    default=NULL
+Flag to change the outputs from a pdf file to a low resolution png file.
+    
+   * default=NULL	
+   * Ex: -r y 
+    
+-l	:
 
-      ex: myChrbedfile.bed
+Input a color for the line(s) created from the file given to the -f flag. 
+    
+   * default=blue,red	
+   * Ex: -l blue,red
 
+-y	: 
 
-"-l":
+To change the sample name in the legend for the file specified with the `-f` argument. The default name will always be the first 15 characters of the filename.
+    
+  * default=NULL	
+  * Ex: -y MyNewName
 
-  Input a Color For Lines
+-u:
 
-    default=NULL
+Change the ylim maximum value for the plot window. The default is a copy number of 6. 
+    
+   * default=6	
+   * Ex: -u 7
+    
+-d	: 
 
-      ex: -l blue,red
+Input the directory path to bgzipped and tabix indexed bed files from additional samples. This option is used when the user wants to plot multiple samples. Note: the program will automatically search for .tbi files and requires them to run. 
+    
+   * default=NULL	
+   * Ex: -d /path/to/a/directory/with/bed/file
+   	
+	-s: 
+   		Flag used if user would like to plot every file in the given directory 
+		against the file denoted by the -f flag. Must be used along with the -d flag.
+ 			default=NULL	Ex: -d /path/to/dir/ -s y
 
-"-t":
+	-p: 
 
-  Flag to Plot Certain Chromosomes, From Chromosome Bed File, Together.
+  		Input an ending pattern for files found inside the directory in "-d" flag. Must be the 
+		ending pattern of the file. Can also be used to specify a specific file from a directory.
+    
+    			default=.bed.gz	Ex: -d /path/to/dir/ -p .t1.cn.bed.gz	Ex: -d /path/to/dir/ -p exact.t1.cn.bed.gz 
 
-    default=NULL
+-a	: 
 
-      ex: -t NGF,POGZ
+Flag used if user would like to add an annotation track (e.g., exons) using a bgzipped and tabix indexed bed file. The default color settings for the annotation track included a red fill, black border, and Exon as the name,
 
-"-o":
+* default=NULL	
+* ex: -a exonbedfile.bed
+	
+	  -n: 
 
+  		Flag must be used along with "-a" to change the fill,boarder, and name of annotation track. 
+  
+    			default=NULL	Ex: -a exonbedfile.bed.gz -n "color,color,name"
+    
+-b:
 
-  Allows User to Name, and Place All Chromosome Plots Outputs Into One PDF, Default Is Plots Each Coordinate To Its Own PDF File
+This flag will create a box-plot window in the top right corner of the existing line plot. The box plot will display the individual, marked with the -f flag, with a blue dot. This will automatically turn on if there are more than 10 files when multiplotting.
 
-    default=NULL
+* default=NULL	
+* Ex: -b y 
 
-     ex: -o multiplePagePDFFileofMyPlots.pdf
+-t:
 
+This flag takes two names, found in the chromosome coordinate file, and plots them side by side on a single plot. The two names must be from regions on the same chromosome. Data from the fourth column of the chromosome bed file must be used, typically it is a name/identifier. The default colors of these lines are blue and red, but can be modified with the -l flag.
+    
+* default=NULL	
+* Ex: -t BARX1,BARX1-DT
 
-Example Runs:
+-g: 
 
-  Rscript Quick2Plot.R -f myInitialQuick-merBedFile.bed -c myChrFile.bed -a MyAnnotationFile.bed  -d /Users/elvisa/Desktop/Rtesting/fake -o MyMultiplePDFOutputFile.pdf
+Threshold values for printing out names that are below the first value or above the second value. Note that if the user specificies the individual is male (-x M), the threshold for the X and Y chromosomes will be 1 less than the values indicated with this option. 
 
+* default="1.3,2.7"	
+* Ex: -g 2,3
+	
+-x: 
 
- ## Plotting combinations
+If the sex is known for the individual in the file specified with the -f flag enter the value with this option. Default is F. This flag only has to be called if user wants to change sex to M.
+    
+* default=F	
+* Ex: -x M
 
-  * -f -c
+-v: 
 
-    * Plots all chromosomes in -c flag's file with a black line and in separate PDF files
-
-      * Add -l {COLORNAME} to change line color.
-
-        * ex : -f qm.bed -c chr.bed -l blue
-
-      * Add -o {OUTPUTFILENAME.PDF} to make a multiple page PDF.
-
-        * ex : -f qm.bed -c chr.bed -o myoutput.pdf
-
-      * Add -d {/path/to/directory} to plot multiple lines from other bedfiles on top of the initial file given with -f flag.  
-
-        * ex : -f qm.bed -c chr.bed -d /path/to/directory
-
-      * Add -d {/path/to/directory} and -i {COLORNAME} to change the initial -f file line color when plotting against all bed files in directory.
-
-          * ex :  -f qm.bed -c chr.bed -d /path/to/directory -i green
-       * Add -d {/path/to/directory} and -p {PATTERN} to grab only files with the inpputed ending inside directoru to be used in plot.
-
-          * ex :  -f qm.bed -c chr.bed -d /path/to/directory -i green -p .bed.gz
-
-       * Add -a {AnnotationBedFile.bed} to add an annotation track to all plots.
-
-          * ex : -f qm.bed -c chr.bed -d /path/to/directory -a myexonstoplot.bed
-
-          * ex : -f qm.bed -c chr.bed -a myexonstoplot.bed
-
-
-  * -f -c -t
-
-   * Plots only named chromosomes from -c flag's file. Can not use -o flag when -t flag is present.
-
-      * Add -t {CHR1,CHR2} to plot certain chromosomes together on a single plot. -f qm.bed -c chr.bed -t XYZ,ABC
-
-        * Add -t {CHR1,CHR2} -l {COLORNAME1,COLORNAME2} to change the line color of plotted chromosomes.
-
-          *  ex: -f qm.bed -c chr.bed -t XYZ,ABC -l blue,red
-
-        * Add -a {AnnotationBedFile.bed} to add an annotation track to all plot.
-
-          * ex : -f qm.bed -c chr.bed -t XYZ,ABC -l blue,red -a myexonstoplot.bed
-
-        * Add -d {/path/to/directory} to plot multiple lines from other bedfiles on top of the initial file given with -f flag.  
-
-          * ex : -f qm.bed -c chr.bed -d /path/to/directory -t XYZ,ABC -l blue,red -a myexonstoplot.bed
-
-          * ex : -f qm.bed -c chr.bed -d /path/to/directory -i green -p .bed.gz -t XYZ,ABC -l blue,red -a myexonstoplot.bed
+Plot only the regions whose threshold values are below the first value of -g flag, or above the second of the -g flag. Note that the X and Y chromosomes will have a threshold one less than the values given if the sex is male. 
+    
+ * default=NULL	
+ * Ex: -v y
