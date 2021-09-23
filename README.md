@@ -5,16 +5,24 @@ Maintainer: Elvisa Mehinovic
 Laboratory of Dr. Tychele N. Turner, Ph.D.
 
 Washington University in St. Louis
-
+<img align="right" src="https://user-images.githubusercontent.com/77067493/129043760-26d57868-5f15-46bb-a00e-e82f8c50fa9c.png" height="20%" width="20%" >
 <h1>PYRUS</h1>
   PYRUS is a tool for plotting copy number estimate data, from an individual, for user-specified regions of the genome. It has several options including plotting other individuals in the same region, plotting an annotation track, and writing out specific regions where the individuals have a copy number below or above given values. The input to the tool are bgzipped and tabix indexed bed files, which enables rapid plotting of the data.
 
-### ADD IMAGE HERE ###
+---
+
+<img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Large_Directory_Example.png height="100%" width="100%" >
+
+---
 
 ### Get Started
+Example Files:
+
+[Test](#EXAMPLE1)
+
 Clone the PYRUS repository:
   
-  git clone git@github.com:TNTurnerLab/PYRUS.git
+    git clone git@github.com:TNTurnerLab/PYRUS.git
 
 ## Running Pyrus Local Requirements
 Users have the option to run PYRUS using Docker, or via the command line using Rscript.
@@ -119,17 +127,17 @@ chr1	68902	82642	2.633766
 * default=NULL	
 * Ex: -d /path/to/a/directory/with/bed/file
 
--s: 
-  Flag used if user would like to plot every file in the given directory 
-against the file denoted by the -f flag. Must be used along with the -d flag.
-default=NULL	Ex: -d /path/to/dir/ -s y
+      -s: 
+      Flag used if user would like to plot every file in the given directory 
+      against the file denoted by the -f flag. Must be used along with the -d flag.
+      default=NULL	Ex: -d /path/to/dir/ -s y
 
--p: 
+      -p: 
   
-  Input an ending pattern for files found inside the directory in "-d" flag. Must be the 
-ending pattern of the file. Can also be used to specify a specific file from a directory.
+      Input an ending pattern for files found inside the directory in "-d" flag. Must be the 
+      ending pattern of the file. Can also be used to specify a specific file from a directory.
 
-default=.bed.gz	Ex: -d /path/to/dir/ -p .t1.cn.bed.gz	Ex: -d /path/to/dir/ -p exact.t1.cn.bed.gz 
+      default=.bed.gz	Ex: -d /path/to/dir/ -p .t1.cn.bed.gz	Ex: -d /path/to/dir/ -p exact.t1.cn.bed.gz 
 
 -a	: 
   
@@ -138,11 +146,11 @@ default=.bed.gz	Ex: -d /path/to/dir/ -p .t1.cn.bed.gz	Ex: -d /path/to/dir/ -p ex
 * default=NULL	
 * ex: -a exonbedfile.bed
 
--n: 
+      -n: 
   
-  Flag must be used along with "-a" to change the fill,boarder, and name of annotation track. 
+      Flag must be used along with "-a" to change the fill,boarder, and name of annotation track. 
 
-default=NULL	Ex: -a exonbedfile.bed.gz -n "color,color,name"
+      default=NULL	Ex: -a exonbedfile.bed.gz -n "color,color,name"
 
 -b:
   
@@ -178,3 +186,18 @@ default=NULL	Ex: -a exonbedfile.bed.gz -n "color,color,name"
 
 * default=NULL	
 * Ex: -v y
+
+-t: 
+  
+  Use this flag if intrested in plotting trios. Child file should be called with the -f flag, while parents should be called with the -j flag sepreated by ",". 
+
+* default=NULL	
+* Ex: -t /path/to/parent/1/file1.bed.gz,/path/to/parent/2/file2.bed.gz
+
+
+
+
+
+
+
+<a name="EXAMPLE1"></a>
