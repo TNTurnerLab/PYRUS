@@ -11,14 +11,14 @@ Washington University in St. Louis
 
 ---
 
-<img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Large_Directory_Example.png height="100%" width="100%" >
+<img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Sample_Directory.png height="100%" width="100%" >
 
 ---
 
 ### Get Started
 Example Files:
 
-[Test](#EXAMPLE1)
+[Example With Large Directory](#EXAMPLE1)
 
 Clone the PYRUS repository:
   
@@ -201,3 +201,6 @@ chr1	68902	82642	2.633766
 
 
 <a name="EXAMPLE1"></a>
+
+
+<img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Large_Directory_Example.png height="100%" width="100%" >
