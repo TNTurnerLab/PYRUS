@@ -15,9 +15,9 @@ option_list<-list(make_option(c("-f", "--file"), default=NULL, type="character",
                   make_option(c("-b", "--box"), default=NULL, type="character",help='Plot Box-plot Window'),
                   make_option(c("-s", "--singleplots"), default=NULL, type="character",help='plots each file in dirpath individually'),
                   make_option(c("-y", "--rename"), default=NULL, type="character",help='Rename file -f on plot'),
-                  make_option(c("-g", "--regions"), default="1.3,2.7", type="character",help='Plot only regions above 2.7 CNV or below 1.3 CNV'),
-                  make_option(c("-v", "--minmax"), default=NULL, type="character",help='print between regions'),
-                  make_option(c("-j", "--Trio"), default=NULL, type="character",help='Plot trio with files from parent:A(Male) and parent:B(Female) alongside the initial file -f'),
+                  make_option(c("-g", "--regions"), default="1.3,2.7", type="character",help='Print only regions above 2.7 CNV or below 1.3 CNV'),
+                  make_option(c("-v", "--minmax"), default=NULL, type="character",help='Plot outside of regions from the -g flag'),
+                  make_option(c("-j", "--Trio"), default=NULL, type="character",help='Plot trio with files from parent:A(M) and parent:B(F) alongside the initial file -f'),
                   make_option(c("-k", "--subtractbynum"), default=1, type="character",help='Subtract values given in -g flag by input for only chrY and chrX if karyotype is M, Default is 1 '),
                   make_option(c("-u", "--topylim"), default=6, type="integer",help='change top -y lim value, defualt is 6'),
                   make_option(c("-x", "--sex"), default=F, type="character",help='M or F sample, if male sample, -g flag max and mins will be subtracted by 1'),
@@ -81,7 +81,6 @@ if(!is.null(opt$cordfile)){
         y<- lapply(getnewlistname,function(x){
           stop("Missing Input: Chromosome Position Bed File")}) })}
 }
-
 if(is.null(opt$highRes)){
     outfilename=opt$outfile
     pdf(outfilename)}
@@ -176,7 +175,11 @@ func<-function(t){
            ylab="Estimated Copy Number", main=(bquote(paste(paste(.(addname)),italic(.(nameofit))))), pch=23,
            ylim= c(0,opt$topylim), type= 'l' , cex.main=1, cex.lab=1, cex.axis=1,las=1)
       abline(h=2, col="grey", lty=2)
-      
+      lengthofit<-(as.numeric(stopcord)-as.numeric(startcord))
+      lengthofit<-lengthofit+1
+      mtext(paste("Length:",lengthofit), side = 3,cex=0.5)
+
+      segments(x0 = as.numeric(startcord), y0 = -0.1, x1 = as.numeric(stopcord), y1 = -0.1, col=colofline)    
       if(is.null(opt$Trio)){
       legend("topright", inset=c(-0.2,0.5), legend=filename,pch=23,col=colofline,lty=1,xpd = TRUE,horiz = TRUE,bty = "n",cex=0.5)}
       
