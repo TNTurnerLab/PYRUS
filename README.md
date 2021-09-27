@@ -18,7 +18,19 @@ Washington University in St. Louis
 ### Get Started
 Example Files:
 
-[Example With Large Directory](#EXAMPLE1)
+[Example With Example Directory](#EXAMPLE1)
+
+[Example With Default Settings](#EXAMPLE2)
+
+[Example With ReSeq Bed File](#EXAMPLE3)
+
+[Example With Trio Family](#EXAMPLE4)
+
+[Plot Together Example](#EXAMPLE5)
+
+[Example With AUTS2 Bed File and Large Directory(not given)](#EXAMPLE6)
+
+
 
 Clone the PYRUS repository:
   
@@ -196,10 +208,84 @@ chr1	68902	82642	2.633766
 
 
 
+##  EXAMPLES
 
-
+---
 
 <a name="EXAMPLE1"></a>
 
+### Example With AUTS2 Bed File and Sample Directory
+
+ <a href="https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Sample_Directory.pdf">AUTS2_Sample_Directory.png</a>
+
+<img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Sample_Directory.png height="100%" width="100%" >
+
+    Rscript /Path/To/PYRUS/PYRUS.R -f /Path/To/PYRUS/Example_Data/WTC-11_Sample/WTC-11.bed.gz -c /Path/To/PYRUS/Example_Data/Sample_Reference_Data/AUTS2.bed -a /Path/To/PYRUS/Example_Data/Sample_Annotation_Track_Data/Exons.bed.gz  -d /Path/To/PYRUS/Example_Data/Sample_Database_Directory -o AUTS2_Sample_Directory.pdf -l dodgerblue -y WTC-11
+
+---
+
+<a name="EXAMPLE2"></a>
+
+### Example With Default Settings
+
+ <a href="https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Basic_Example.pdf">Basic_Example.pdf</a>
+
+<img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Basic_Example.png height="100%" width="100%" >
+
+    Rscript /Path/To/PYRUS/PYRUS.R -f /Path/To/PYRUS/Example_Data/WTC-11_Sample/WTC-11.bed.gz -c /Path/To/PYRUS/Example_Data/Sample_Reference_Data/AUTS2.bed -o Basic_Example.pdf
+ 
+ ---
+ 
+<a name="EXAMPLE3"></a>
+
+### Example With ReSeq Bed File 
+   
+<a href="https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/RefSeq.pdf ">RefSeq.pdf</a>
+
+<a href="https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/RefSeq_46XY_WTC-11.bed.gz_chromosomal_positions_outside_of_1.3_and_2.7.txt">RefSeq_46XY_WTC-11.bed.gz_chromosomal_positions_outside_of_1.3_and_2.7.txt</a>
+ 
+    Rscript /Path/To/PYRUS/PYRUS.R -f /Path/To/PYRUS/Example_Data/WTC-11_Sample/WTC-11.bed.gz -c /Path/To/PYRUS/Example_Data/Sample_Reference_Data/RefSeq.bed.gz -l dodgerblue -o RefSeq.pdf
+
+---
+
+<a name="EXAMPLE4"></a>
+
+### Example With Trio Family
+
+<a href=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/TRIO_Family_NA12878.pdf>TRIO_Family_NA12878.pdf</a>
+
+<a href=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/TRIO:46XX_NA12878.qm2.CN.1k.bed.gz_chromosomal_positions_outside_of_1.3_and_2.7.txt>TRIO:46XX_NA12878.qm2.CN.1k.bed.gz_chromosomal_positions_outside_of_1.3_and_2.7.txt</a>
+
+    Rscript /Path/To/PYRUS/PYRUS.R -f /Path/To/PYRUS/Example_Data/Example_Family/NA12878.qm2.CN.1k.bed.gz -c /Path/To/PYRUS/Example_Data/Sample_Reference_Data/Mills_et_al_2011_hg38_supplementary_table s5_41586_2011_BFnature09708_MOESM246_ESM_simple_table_NA12878.bed -j /Path/To/PYRUS/Example_Data/Example_Family/NA12891.qm2.CN.1k.bed.gz,/Path/To/PYRUS/Example_Data/Example_Family/NA12892.qm2.CN.1k.bed.gz -a /Path/To/PYRUS/Example_Data/Sample_Annotation_Track_Data/Exons.bed.gz -l dodgerblue -o Trio_Family_NA12878.pdf
+
+
+
+<a href=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Trio_With_Directory.pdf>Trio_With_Directory.pdf</a>
+
+    Rscript /Path/To/PYRUS/PYRUS.R -f /Path/To/PYRUS/Example_Data/Example_Family/NA12878.qm2.CN.1k.bed.gz -c /Path/To/PYRUS/Example_Data/Sample_Reference_Data/Zhang_et_al_2019_Table_S1_Standard_CNVs_pcbi.1007069.s004_successfully_lifted_to_hg38.bed -j /Path/To/PYRUS/Example_Data/Example_Family/NA12891.qm2.CN.1k.bed.gz,/Path/To/PYRUS/Example_Data/Example_Family/NA12892.qm2.CN.1k.bed.gz -a /Path/To/PYRUS/Example_Data/Sample_Annotation_Track_Data/Exons.bed.gz -d /Path/To/PYRUS/Example_Data/Sample_Database_Directory -l dodgerblue -o Trio_With_Directory.pdf
+
+---
+
+<a name="EXAMPLE5"></a>
+
+### Plot Together Example 
+
+<a href=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Plot_Together_Example.pdf>Plot_Together_Example.pdf</a>
+
+<img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Plot_Together_Example.png height="100%" width="100%" >
+
+    Rscript /Path/To/PYRUS/PYRUS.R -f /Path/To/PYRUS/Example_Data/WTC-11_Sample/WTC-11.bed.gz -c /Path/To/PYRUS/Example_Data/Sample_Reference_Data/RefSeq.bed.gz -d /Path/To/PYRUS/Example_Data/Sample_Database_Directory -a /Path/To/PYRUS/Example_Data/Sample_Annotation_Track_Data/Exons.bed.gz -t BARX1,BARX-DT -o Plot_Together_Example.pdf
+
+
+<a name="EXAMPLE6"></a>
+
+---
+
+### Example With AUTS2 Bed File and Large Directory(not given)
+
+
+<a href=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Large_Directory_Example.pdf>AUTS2_Large_Directory_Example.pdf</a>
 
 <img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Large_Directory_Example.png height="100%" width="100%" >
+
+    Rscript /Path/To/PYRUS/PYRUS.R -f /Path/To/PYRUS/Example_Data/WTC-11_Sample/WTC-11.bed.gz -c /Path/To/PYRUS/Example_Data/Sample_Reference_Data/AUTS2.bed -a /Path/To/PYRUS/Example_Data/Sample_Annotation_Track_Data/Exons.bed.gz  -d /My/Large/Directory -o AUTS2_Sample_Directory.pdf -l dodgerblue -y WTC-11
