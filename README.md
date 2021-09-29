@@ -22,7 +22,7 @@ Example Files:
 
 [Example With Default Settings](#EXAMPLE2)
 
-[Example With ReSeq Bed File](#EXAMPLE3)
+[Example With RefSeq Bed File](#EXAMPLE3)
 
 [Example With Trio Family](#EXAMPLE4)
 
