@@ -22,12 +22,12 @@ bibliography: paper.bib
 # Statement of need
 
 Identifying copy number variation in whole-genome sequencing data has been
-challenging and one approach to assess this data is through visualization of
+challenging and one approach to assessing this data is through visualization of
 the underlying copy number estimates. In family-based studies, it can be 
 especially beneficial to plot data from the parents and the children to confirm
 inheritance patterns. A tool is needed to plot copy number estimates for 
 one to many samples in a rapid manner. PYRUS is a stand-alone R script
-with multiple capabilites for plotting copy number data.
+with multiple capabilities for plotting copy number data.
 
 # Summary
 
@@ -35,7 +35,7 @@ with multiple capabilites for plotting copy number data.
 for user-specified regions of the genome. It has several options including 
 plotting other individuals in the same region, plotting an annotation track, 
 and writing out specific regions where the individuals have a copy number 
-below or above given copy number thresholds. The input to the tool are 
+below or above given copy number thresholds. Inputs to the tool are 
 bgzipped and tabix indexed bed file(s) for the primary individual and 
 a gzipped bed file containing coordinates to be plotted from the genome.
 Utilizing compressed files and tabix both saves space and enables rapid
@@ -49,13 +49,13 @@ users to bgzip and tabix-index the output bed files for input into `PYRUS`. This
 allows us to utilize tabix [@Li et al. 2011)] to quickly pull regions of the genome for 
 plotting with `PYRUS`.
 
-We have built in several features to `PYRUS` beyond plotting only the individual
+We have built-in several features to `PYRUS` beyond only plotting the individual
 copy number estimates for a given region. These include 1) plotting a directory
 of files with copy number estimates, 2) customizing the colors on different aspects
 of the plot, 3) customizing the maximum copy number to be plotted, 4) adding an
 annotation track, 5) adding a boxplot of the copy number estimates from all 
 individuals to the top-right of the plot, 6) printing out a file with regions above or 
-below given copy number thresholds, 7) and plotting trios from family data.
+below given copy number thresholds, and 7) plotting trios from family data.
 
 <put plot data>
 
@@ -64,12 +64,13 @@ released under the MIT license.
 
 # Figures
 
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
+![Fig.1:](https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Sample_Directory.png) 
+  ***Fig.1:*** Example plot of AUTS2 gene's CNV, within WTC-11, alongside a directory of files and an additional exon annotation track.
+  
+  
+![Fig.2:](https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Trio_family_Deletion_Example.png)
+  ***Fig.2:*** Example plot of a trio from family data with the addition of an exon annotation track.
 
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
 
 # Acknowledgements
 
