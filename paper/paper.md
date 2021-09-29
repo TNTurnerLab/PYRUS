@@ -18,6 +18,8 @@ date: 1 October 2021
 bibliography: paper.bib
 
 ---
+\setlength{\headheight}{63.55022pt}
+
 
 # Statement of need
 
@@ -46,7 +48,7 @@ QuicK-mer2 [@Shen:2020] and fastCN [@Pendleton:2018]. These programs
 output bed files containing windows of the genome with copy number estimates.
 Plotting estimates from these bed files as-is can be quite slow and so we require 
 users to bgzip and tabix-index the output bed files for input into `PYRUS`. This 
-allows us to utilize tabix [@Li et al. 2011)] to quickly pull regions of the genome for 
+allows us to utilize tabix [@Li:2011] to quickly pull regions of the genome for 
 plotting with `PYRUS`.
 
 We have built-in several features to `PYRUS` beyond only plotting the individual
@@ -64,13 +66,9 @@ released under the MIT license.
 
 # Figures
 
-![Fig.1:](https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/AUTS2_Sample_Directory.png) 
-  ***Fig.1:*** Example plot of AUTS2 gene's CNV, within WTC-11, alongside a directory of files and an additional exon annotation track.
-  
-  
-![Fig.2:](https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Trio_family_Deletion_Example.png)
-  ***Fig.2:*** Example plot of a trio from family data with the addition of an exon annotation track.
+![***Fig.1:*** Example plot of AUTS2 gene's CNV, within WTC-11, alongside a directory of files and an additional exon annotation track.](AUTS2_Sample_Directory.png) 
 
+![***Fig.1:*** Example plot of a trio from family data with the addition of an exon annotation track.](Trio_family_Deletion_Example.png) 
 
 # Acknowledgements
 
