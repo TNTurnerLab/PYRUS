@@ -256,9 +256,12 @@ chr1	68902	82642	2.633766
 
 <a href=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/TRIO:46XX_NA12878.qm2.CN.1k.bed.gz_chromosomal_positions_outside_of_1.3_and_2.7.txt>TRIO:46XX_NA12878.qm2.CN.1k.bed.gz_chromosomal_positions_outside_of_1.3_and_2.7.txt</a>
 
+<img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Trio_family_Deletion_Example.png height="100%" width="100%" > 
+
     Rscript /Path/To/PYRUS/PYRUS.R -f /Path/To/PYRUS/Example_Data/Example_Family/NA12878.qm2.CN.1k.bed.gz -c /Path/To/PYRUS/Example_Data/Sample_Reference_Data/Mills_et_al_2011_hg38_supplementary_table s5_41586_2011_BFnature09708_MOESM246_ESM_simple_table_NA12878.bed -j /Path/To/PYRUS/Example_Data/Example_Family/NA12891.qm2.CN.1k.bed.gz,/Path/To/PYRUS/Example_Data/Example_Family/NA12892.qm2.CN.1k.bed.gz -a /Path/To/PYRUS/Example_Data/Sample_Annotation_Track_Data/Exons.bed.gz -l dodgerblue -o Trio_Family_NA12878.pdf
 
 
+<img align="center" src=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Trio_family_Deletion_Example_With_Directory.png height="100%" width="100%" >
 
 <a href=https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/Trio_With_Directory.pdf>Trio_With_Directory.pdf</a>
 
