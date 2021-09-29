@@ -46,7 +46,7 @@ Users have the option to run PYRUS using Docker, or via the command line using R
 * seqminer
 * data.table
 
-Running on local command line with R:
+## Running on local command line with R:
   
   Rscript /path/to/cloned/Repo/PYRUS.R -f /path/to/input/file/My_Bed_File.bed.gz -c /path/to/input/file/My_Chr_file.bed.gz {INSERT ANY MORE FLAGS IF NECESSARY}
 
@@ -238,7 +238,7 @@ chr1	68902	82642	2.633766
  
 <a name="EXAMPLE3"></a>
 
-### Example With ReSeq Bed File 
+### Example With RefSeq Bed File 
    
 <a href="https://github.com/TNTurnerLab/PYRUS/blob/main/Example_Plots/RefSeq.pdf ">RefSeq.pdf</a>
 
