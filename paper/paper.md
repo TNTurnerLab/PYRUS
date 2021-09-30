@@ -66,9 +66,9 @@ released under the MIT license.
 
 # Figures
 
-![***Fig.1:*** Example plot of AUTS2 gene's CNV, within WTC-11, alongside a directory of files and an additional exon annotation track.](AUTS2_Sample_Directory.png) 
+![Fig.1: Example plot of CNV in the AUTS2 gene, within individual WTC-11, alongside a directory of files and an exon annotation track.](AUTS2_Sample_Directory.png) 
 
-![***Fig.1:*** Example plot of a trio from family data with the addition of an exon annotation track.](Trio_family_Deletion_Example.png) 
+![Fig.1: Example plot of a trio from family data with the addition of an exon annotation track.](Trio_family_Deletion_Example.png) 
 
 # Acknowledgements
 
