@@ -74,7 +74,7 @@ from https://www.allencell.org/genomics.html and data for individuals NA12878, N
 and NA12892 were downloaded from the 1000 Genomes project resource as described here
 https://www.internationalgenome.org/data-portal/data-collection/30x-grch38. All four 
 individuals were run through QuicK-mer2 to generate genome-wide copy number estimates.
-Coordinates for plotting Fig.2 were derived from [@Mills:2011] Supplementary Table 5.
+Coordinates for plotting Figure 2 were derived from [@Mills:2011] Supplementary Table 5.
 
 # Acknowledgements
 
