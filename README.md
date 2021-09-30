@@ -34,7 +34,7 @@ Example Files:
 
 Clone the PYRUS repository:
   
-    git clone git@github.com:TNTurnerLab/PYRUS.git
+    git clone https://github.com/TNTurnerLab/PYRUS.git
 
 ## Running Pyrus Local Requirements
 Users have the option to run PYRUS using Docker, or via the command line using Rscript.
