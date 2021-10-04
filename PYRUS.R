@@ -20,7 +20,8 @@ option_list<-list(make_option(c("-f", "--file"), default=NULL, type="character",
                   make_option(c("-j", "--Trio"), default=NULL, type="character",help='Plot trio with files from parent:A(M) and parent:B(F) alongside the initial file -f'),
                   make_option(c("-k", "--subtractbynum"), default=1, type="character",help='Subtract values given in -g flag by input for only chrY and chrX if karyotype is M, Default is 1 '),
                   make_option(c("-u", "--topylim"), default=6, type="integer",help='change top -y lim value, defualt is 6'),
-                  make_option(c("-x", "--sex"), default=F, type="character",help='M or F sample, if male sample, -g flag max and mins will be subtracted by 1'),
+                  make_option(c("-x", "--sex"), default="F", type="character",help='M or F sample, if male sample, -g flag max and mins will be subtracted by 1'),
+                  make_option(c("-w", "--isnonhuman"), default="F", type="character",help='If the initial sample is non-human, then this option will turn off kayaotyping (T or F), ex -w T'),
                   make_option(c("-n", "--annInput"), default=NULL, type="character",help='Input For Annotation (fill,boarder,name), ex : "red,blue,Exons'),
                   make_option(c("-o", "--outfile"), default=NULL, type="character",help='Outputs The Chromosome Plots Into One PDF, Defualt Is Plots Each Cordinate To Its Own PDF File'))
 opt<-parse_args(OptionParser(option_list=option_list))
@@ -35,12 +36,11 @@ min<-(as.numeric(strsplit(toString(opt$regions), ',', fixed=TRUE)[[1]][1]))
 annlen<-(-0.12)
 colofline<-strsplit(toString(opt$lineColor), ',', fixed=TRUE)[[1]][1]
 getcol<-strsplit(toString(opt$lineColor), ',', fixed=TRUE)[[1]][2]
-
+isnothuman <- as.character(opt$isnonhuman)
 sampleFile = opt$file
 if(is.null(opt$Trio)){
-  inputdata<-sampleFile
- 
-}
+  inputdata<-sampleFile}
+
 if(!is.null(opt$Trio)){
   inputdata<-append(toString(opt$file),unlist(strsplit(toString(opt$Trio), ',', fixed=TRUE)))
   if(is.null(opt$outfile)){
@@ -51,7 +51,7 @@ if(!is.null(opt$Trio)){
     stop()}
 }
 suppressWarnings({
-if(inputdata==sampleFile){
+if(inputdata==sampleFile && (isnothuman == "F")){
 infile <- as.data.frame(fread(opt$file), header=F)
 infile <- infile[which(infile$V1 %in% c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY")),]
 chromCount <- sum(round(tapply(infile$V4, infile$V1, mean)))
@@ -60,8 +60,14 @@ chrY <- paste0(rep("Y", round(tapply(infile$V4, infile$V1, mean))[names(round(ta
 if((as.integer(round(tapply(infile$V4, infile$V1, mean))[names(round(tapply(infile$V4, infile$V1, mean))) == "chrY"])) >=1 ){
   opt$sex<-'M'}
 }})
+if(isnothuman == "T"){
+  chrX<-""
+  chrY<-""
+  chromCount<-"NH"}
 if(!is.null(opt$cordfile)){
   coord <- read.delim(gzfile(opt$cordfile), header=F)
+  if(length(colnames(coord)) ==3){
+    coord[,4] <- paste0(strtrim(coord[,1],5),":",coord[,2],"-",coord[,3])}
   if(is.null(opt$plotTogether) ){
     COORD_INPUT<- list(paste0(coord[,4],",",coord[,1], ":", coord[,2], "-", coord[,3], sep=""))
   }
@@ -71,6 +77,7 @@ if(!is.null(opt$cordfile)){
     coord1<- coord %>% filter(coord[,4] %in% getnameInitial)
     COORD_INPUT<- list(paste0(coord1[,4],",",coord1[,1], ":", coord1[,2], "-", coord1[,3], sep=""))
     NEWLISTPlot <- tryCatch({ 
+      
       x<- lapply(getnewlistname,function(x){
         coord<- coord %>% filter(coord[,4] %in% x)
         NEWLISTPlot<- list(paste0(coord[,4],",",coord[,1], ":", coord[,2], "-", coord[,3], sep=""))
@@ -118,8 +125,8 @@ func<-function(t){
       inputfile<-k
       filename<-toString(rbind(strtrim(strsplit(toString(basename(inputfile)), '.bed', fixed=TRUE)[[1]][1],15)))
      
-    if(!is.null(opt$Trio)){
-      if(inputfile==opt$file){
+    if(!is.null(opt$Trio) && (isnothuman == "F")){
+      if(inputfile==opt$file ){
         triomember<- "Child"
       ledgendvalue<-(-0.15)}
       if(inputfile!=opt$file){
@@ -155,13 +162,15 @@ func<-function(t){
             png(paste(nameofit, "_",basename(t),".png", sep=""), width = 600, height = 600, units = "px", res=100) }
         if(is.null(opt$HighRes) && !is.null(opt$singleplots) ){
             pdf(paste0(nameofit,"-",basename(t),".pdf")) }
-        }
-    if(chr == "chrY"){
+      }
+      if(isnothuman == "F"){
+    if(chr == "chrY" ){
       min<-(min-as.numeric(opt$subtractbynum))
       max<-(max-as.numeric(opt$subtractbynum))}
     if(opt$sex == "M" && chr == "chrX"){
       max<-(max-as.numeric(opt$subtractbynum))
       min<-(min-as.numeric(opt$subtractbynum))}
+      }
       
     if(is.null(opt$minmax) || (!is.null(opt$minmax) && (as.numeric(initialmean)<=min || as.numeric(initialmean)>=max))){
     par(mar=c(5.1, 4.1, 4.1, 6.1))
@@ -363,7 +372,7 @@ func<-function(t){
           points(2,m, col=getcol, pch=23)}) 
           }
       }
-        if(!is.null(opt$Trio)){
+        if(!is.null(opt$Trio) && (isnothuman == "F")){
           dirmean<-strtrim(toString(mean(na.omit(x))),5)
           printmeans<-paste("D:",dirmean, '\n', triomember,":",strtrim(toString(initialmean),5))
           legend("topright", inset=c(as.numeric(ledgendvalue),0.3), legend=printmeans,col="grey24",pch=23,xpd = TRUE,horiz = TRUE,bty = "n",cex=0.5)
@@ -377,7 +386,7 @@ func<-function(t){
       if(is.null(opt$Trio)){
       holdthething<-paste0(chr,"\t",startcord,"\t",stopcord,"\t",nameofit,"\t",initialmean)
       return(holdthething)}
-      if(!is.null(opt$Trio)){
+      if(!is.null(opt$Trio) && (isnothuman == "F")){
       holdthething<-paste0(chr,"\t",startcord,"\t",stopcord,"\t",nameofit,"\t",initialmean, "\t", triomember)
       return(holdthething)}
       }
@@ -391,9 +400,12 @@ func<-function(t){
     filenameisthis<-paste0(chromCount, chrX, chrY,"_",toString(basename(opt$file)),"_chromosomal_positions_outside_of_",min,"_and_",max,".txt")
     if(is.null(opt$Trio)){
       header<-paste0("chrom","\t","start","\t","stop","\t","name","\t","WTC_mean","\t")
+      if(isnothuman == "F"){
       karyotype<-paste0("The karyotype in ", inputdata, " is: ", paste0(chromCount, chrX, chrY), "\n")
       header<-append(karyotype,header)}
-    if(!is.null(opt$Trio)){
+      else{header<-header}
+      }
+    if(!is.null(opt$Trio) && isnothuman == "F"){
       header<-paste0("chrom","\t","start","\t","stop","\t","name","\t","WTC_mean","\t","Parent/Child")
       filenameisthis<-paste0('TRIO:',filenameisthis)}
     a.list<-append(header,unlist(holding[!sapply(holding, is.null)]))

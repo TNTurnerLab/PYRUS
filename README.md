@@ -206,7 +206,12 @@ chr1	68902	82642	2.633766
 * default=NULL	
 * Ex: -t /path/to/parent/1/file1.bed.gz,/path/to/parent/2/file2.bed.gz
 
+-w: 
+  
+  This flag is used when initial data is not human. 
 
+* default="F"	
+* Ex: -w T
 
 ##  EXAMPLES
 
