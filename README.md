@@ -1,7 +1,3 @@
-
-
-Maintainer: Elvisa Mehinovic
-
 Laboratory of Dr. Tychele N. Turner, Ph.D.
 
 Washington University in St. Louis
