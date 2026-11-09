@@ -1,3 +1,6 @@
+> [!NOTE]
+> This project has been superseded by **[CNPI](https://github.com/tnturnerLab/cnpi)**, which offers significantly improved performance and many additional features.
+
 Laboratory of Dr. Tychele N. Turner, Ph.D.
 
 Washington University in St. Louis
